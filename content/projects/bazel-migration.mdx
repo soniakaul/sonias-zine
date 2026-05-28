@@ -1,0 +1,26 @@
+---
+number: "02"
+title: "Gmake → {Bazel} Migration"
+blurb: "A 10-phase LLM prompt chain that migrates legacy module.mk targets to Bazel BUILD files. Converts a manual, error-prone migration into a deterministic, auditable pipeline with structured JSON validation at each step."
+tags:
+  - Bazel
+  - LLM pipelines
+  - Build systems
+  - Internal tooling
+featured: true
+stats:
+  - label: BUILD files
+    value: "1,200"
+    valueAccent: "+"
+  - label: Pipeline phases
+    value: "10"
+  - label: Status
+    value: ""
+    valueAccent: "Live"
+---
+
+<p className="lede">
+A short note on this entry: the long-form write-up is in progress. Drop back soon.
+</p>
+
+The Gmake → Bazel migration at Cisco involved thousands of legacy `module.mk` targets that needed to become BUILD files. Doing it by hand was error-prone and slow. The pipeline I built breaks the translation into 10 deterministic phases, each with structured JSON output validated against a schema. An LLM does the semantic translation; the surrounding infrastructure handles correctness.

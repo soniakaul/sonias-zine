@@ -1,0 +1,57 @@
+---
+number: "01"
+title: "AI Merge {Conflict} Resolver"
+blurb: "An agentic system that handles the Git conflicts no engineer wants to do by hand. Codedrop trigger fires a Python orchestrator, which calls Codex CLI per file, writes structured decisions to an audit log, and surfaces it all in a Node UI. In pilot at Cisco; V2 adds AI recommendations with engineer override."
+tags:
+  - Python
+  - Codex CLI
+  - Node.js
+  - Agent design
+  - Production
+featured: true
+stats:
+  - label: Pilot users
+    value: "14"
+  - label: Conflicts resolved
+    value: "320"
+    valueAccent: "+"
+  - label: Avg time saved
+    value: "42"
+    valueAccent: "min"
+  - label: Status
+    value: ""
+    valueAccent: "V2 in build"
+---
+
+<p className="lede">
+The first time I watched an NX-OS engineer walk through a branch-collapse merge by hand, I started counting. By minute forty he had resolved nine of eighty-three conflicting files. Second monitor on the ticket, third on the diff, yellow legal pad with arrows on it. The arrows were the giveaway. When the tool you reach for is a legal pad, the tooling has lost.
+</p>
+
+The Conflict Resolver started as one question: what if the engineer's role wasn't to do the merge, but to *approve* the merge? The merge itself is something an LLM can reason about cleanly. The thing humans add isn't pattern matching; it's judgment about context that lives outside the diff.
+
+## The architecture
+
+```
+codedrop trigger
+       │
+       ▼
+  git_conflicts_scan.pl  ───►  spawns background agent
+                                       │
+                                       ▼
+                              python orchestrator
+                                       ├──► Codex CLI (per file)
+                                       ▼
+                              audit_log.json
+                                       ▼
+                              Node.js UI
+                                       ▼
+                              apply_resolution.py
+```
+
+V1 ships engineer-decision-only. V2 layers AI recommendations with override and training-data capture.
+
+## V2: confidence-calibrated recommendations
+
+V2 adds an AI recommendation alongside each engineer decision — confidence score, one-sentence explanation, citation back to the part of the file that justified it. Engineer scans, overrides the wrong ones, approves the rest. Every override becomes training data.
+
+The open problem is confidence calibration. A model that says "92% sure" needs to be wrong 8% of the time, no more and no less, or the engineers stop trusting the number — and once they stop trusting the number, they start re-reading every recommendation, and the loop is broken.
