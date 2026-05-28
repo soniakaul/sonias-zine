@@ -156,7 +156,6 @@ The first build takes ~60 seconds. Pushes to `main` auto-deploy.
 **Coming in v2 (Sprint 3):**
 
 - &ldquo;Ask the editor&rdquo; RAG backend (Gemini Flash + pgvector)
-- Generative marginalia (◆) for long-form features
 - Wire items pulled from live data sources (GitHub commits, now-file)
 
 **Coming in v3:**

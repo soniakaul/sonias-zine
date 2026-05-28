@@ -30,11 +30,10 @@ export function getCover() {
 export function getWireItems(): string[] {
   // Edit this list anytime — what's the wire showing today?
   return [
-    "Last shipped · AI Conflict Resolver V1.3",
-    "Last dive · Monastery Beach, 8 May",
-    "Currently reading · Anna Wiener",
-    "Open obsession · neocloud economics",
-    "Now playing · Caroline Polachek",
+    "Last shipped · AI Conflict Resolver V1",
+    "Currently reading · Project Hail Mary, Andy Weir",
+    "Open obsession · dates (the fruit)",
+    "Now playing · IT'S BEEN AWFUL, Isaiah Rashad",
   ];
 }
 

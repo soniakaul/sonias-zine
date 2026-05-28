@@ -1,33 +1,22 @@
 ---
 number: "01"
 title: "AI Merge {Conflict} Resolver"
-blurb: "An agentic system that handles the Git conflicts no engineer wants to do by hand. Codedrop trigger fires a Python orchestrator, which calls Codex CLI per file, writes structured decisions to an audit log, and surfaces it all in a Node UI. In pilot at Cisco; V2 adds AI recommendations with engineer override."
+blurb: "An agentic system in production at Cisco — 500+ Git merge conflicts resolved end-to-end — that automates the work engineers used to do by hand. A Python orchestrator triggers per-file LLM agents through Codex CLI, writes structured decisions to an auditable log, and surfaces it all through a Node UI. V2 layers confidence-calibrated AI recommendations with engineer override; V3 closes the loop by feeding the override stream back into the model as learning insights."
 tags:
   - Python
   - Codex CLI
   - Node.js
   - Agent design
-  - Production
-featured: true
-stats:
-  - label: Pilot users
-    value: "14"
-  - label: Conflicts resolved
-    value: "320"
-    valueAccent: "+"
-  - label: Avg time saved
-    value: "42"
-    valueAccent: "min"
-  - label: Status
-    value: ""
-    valueAccent: "V2 in build"
+  - In production
+  - Work in progress
+featured: false
 ---
 
 <p className="lede">
 The first time I watched an NX-OS engineer walk through a branch-collapse merge by hand, I started counting. By minute forty he had resolved nine of eighty-three conflicting files. Second monitor on the ticket, third on the diff, yellow legal pad with arrows on it. The arrows were the giveaway. When the tool you reach for is a legal pad, the tooling has lost.
 </p>
 
-The Conflict Resolver started as one question: what if the engineer's role wasn't to do the merge, but to *approve* the merge? The merge itself is something an LLM can reason about cleanly. The thing humans add isn't pattern matching; it's judgment about context that lives outside the diff.
+The Conflict Resolver started as one question: what if the engineer&rsquo;s role wasn&rsquo;t to do the merge, but to *approve* the merge? The merge itself is something an LLM can reason about cleanly. The thing humans add isn&rsquo;t pattern matching; it&rsquo;s judgment about context that lives outside the diff.
 
 ## The architecture
 
@@ -48,10 +37,14 @@ codedrop trigger
                               apply_resolution.py
 ```
 
-V1 ships engineer-decision-only. V2 layers AI recommendations with override and training-data capture.
+V1 is live in production. 500+ conflicts resolved end-to-end so far, every decision auditable, every resolution reversible. The current focus is the quality of recommendations and the context engineering that surrounds them — the boring work that decides whether engineers trust the system enough to lean on it.
 
 ## V2: confidence-calibrated recommendations
 
-V2 adds an AI recommendation alongside each engineer decision — confidence score, one-sentence explanation, citation back to the part of the file that justified it. Engineer scans, overrides the wrong ones, approves the rest. Every override becomes training data.
+V2 layers an AI recommendation alongside each engineer decision — confidence score, one-sentence explanation, citation back to the part of the file that justified it. Engineer scans, overrides the wrong ones, approves the rest. Every override becomes structured signal.
 
-The open problem is confidence calibration. A model that says "92% sure" needs to be wrong 8% of the time, no more and no less, or the engineers stop trusting the number — and once they stop trusting the number, they start re-reading every recommendation, and the loop is broken.
+The open problem is confidence calibration. A model that says &ldquo;92% sure&rdquo; needs to be wrong 8% of the time, no more and no less, or the engineers stop trusting the number — and once they stop trusting the number, they start re-reading every recommendation, and the loop is broken.
+
+## V3: the override stream as learning data
+
+V3 turns the override stream into the most valuable artifact in the system. Each override is a labeled disagreement between the model and a senior engineer on a real, production-scale conflict — exactly the kind of supervision signal that&rsquo;s expensive to manufacture and almost impossible to fake. V3 feeds these insights back into the model as in-context learning examples, then eventually as fine-tuning data. The goal: a resolver whose calibration improves the more it&rsquo;s used.

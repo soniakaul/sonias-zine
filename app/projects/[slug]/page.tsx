@@ -55,11 +55,6 @@ export default async function ProjectFeaturePage({
 
       <div className="article-body">
         <aside className="margin-col">
-          <div className="margin-note">
-            <span className="label">Editor&rsquo;s Note</span>
-            This piece is part of the Projects department. The AI-generated
-            marginalia (◆) will appear here once the v2 backend ships.
-          </div>
           {entry.tags.length > 0 && (
             <div className="margin-note">
               <span className="label">Stack</span>
