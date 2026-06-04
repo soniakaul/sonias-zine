@@ -7,7 +7,7 @@ editorial type system. The site has the structural commitments of a magazine —
 masthead, departments, folios, marginalia — but updates continuously rather
 than being released as discrete issues.
 
-Live at: _(deploy URL pending)_
+Live at: _soniakaul.com_
 
 ---
 
