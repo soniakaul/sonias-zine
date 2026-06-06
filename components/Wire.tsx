@@ -8,7 +8,7 @@ export default function Wire() {
 
   return (
     <div className={styles.wire}>
-      <div className={styles.wireLabel}>The Wire ✦</div>
+      <div className={styles.wireLabel}>Latest ✦</div>
       <div className={styles.wireTrack}>
         <div className={styles.wireContent}>
           {doubled.map((item, i) => (

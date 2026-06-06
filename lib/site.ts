@@ -11,7 +11,7 @@
 export function getMasthead() {
   return {
     name: "Sonia Kaul",
-    location: "Fremont, CA",
+    location: "San Francisco, CA",
     volume: { major: 1, minor: 37 },
     lastRevised: formatDate(new Date()),
     tagline: "A Living Publication",
@@ -21,9 +21,9 @@ export function getMasthead() {
 export function getCover() {
   return {
     eyebrow:
-      "A magazine of software, photographs, and other obsessions",
+      "A magazine of projects, products, and photographs.",
     subtitle:
-      "An ongoing record of the engineering I'm shipping, the photographs I keep taking, and the products I'm still figuring out.",
+      "An ongoing record of the engineering I'm shipping, the products I'm taking apart and spec'ing out, and the photographs I'm taking.",
   };
 }
 
@@ -48,9 +48,9 @@ export const DEPARTMENTS = {
   },
   products: {
     number: "02",
-    title: "Products",
+    title: "Product",
     description:
-      "PRDs, product thinking, and the long arc from engineer to product person.",
+      "Product teardowns, PRDs, and product thinking — the long arc from engineer to product person.",
     pageRange: "pp. 24—36",
     href: "/products",
   },
@@ -58,7 +58,7 @@ export const DEPARTMENTS = {
     number: "03",
     title: "Photography",
     description:
-      "Field notes from five countries. Mostly above water, increasingly below.",
+      "Field notes from everywhere I go. Mostly above water, increasingly below.",
     pageRange: "pp. 38—54",
     href: "/photography",
   },

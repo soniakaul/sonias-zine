@@ -14,11 +14,8 @@ export default function PhotoCard({
   return (
     <div className="photo-card">
       <span className="frame-label">Frame {frame}</span>
-      {imageSrc && <img src={imageSrc} alt={caption} />}
-      <div className="photo-caption">
-        <span className="place">{place}</span>
-        {caption}
-      </div>
+      {imageSrc && <img src={imageSrc} alt={caption || place} />}
+      {place && <div className="photo-meta">{place}</div>}
     </div>
   );
 }

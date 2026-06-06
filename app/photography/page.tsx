@@ -15,19 +15,8 @@ export default function PhotographyPage() {
           № {dept.number} — {dept.title}
         </span>
         <span className="dot"></span>
-        <span>Field notes from five countries</span>
+        <span>Field notes from everywhere I go</span>
       </div>
-
-      <h2 className="spread-headline">
-        Mostly <em>above</em> water.
-        <br />
-        Increasingly below.
-      </h2>
-
-      <p className="spread-deck">
-        A rolling archive. Each frame links to a fuller field note — where,
-        when, what I was thinking.
-      </p>
 
       <div className="photo-grid">
         {photos.map((p) => (

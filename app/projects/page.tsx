@@ -32,30 +32,33 @@ export default function ProjectsPage() {
       </h2>
 
       <p className="spread-deck">
-        A mix of work at Cisco and personal builds. Featured ones get the
-        stats; the rest get a paragraph and a link to the source.
+        A mix of work at Cisco and personal builds.
       </p>
 
       <div className="index-list">
-        {entries.map((e) => (
-          <IndexItem
-            key={e.slug}
-            number={e.number}
-            title={<TitleText title={e.title} />}
-            blurb={e.blurb}
-            tags={e.tags}
-            href={`/projects/${e.slug}`}
-            featured={e.featured}
-            stats={e.stats}
-            readMoreLabel={
-              !e.featured && (e.liveUrl || e.sourceUrl)
-                ? `${e.liveUrl ? "View live ↗" : ""}${
-                    e.liveUrl && e.sourceUrl ? " · " : ""
-                  }${e.sourceUrl ? "Source ↗" : ""}`
-                : undefined
-            }
-          />
-        ))}
+        {entries.map((e) => {
+          const links = e.liveUrl
+            ? [{ label: "Live here ↗", href: e.liveUrl }]
+            : e.sourceUrl
+            ? [{ label: "Source ↗", href: e.sourceUrl }]
+            : [];
+
+          return (
+            <IndexItem
+              key={e.slug}
+              number={e.number}
+              title={<TitleText title={e.title} />}
+              blurb={e.blurb}
+              tags={e.tags}
+              featured={e.featured}
+              stats={e.stats}
+              links={links}
+              withShot
+              image={e.image}
+              imageAlt={`${e.slug} screenshot`}
+            />
+          );
+        })}
       </div>
 
       <div className="folio">

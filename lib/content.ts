@@ -24,10 +24,21 @@ export type Entry = {
   stats?: Stat[];
   liveUrl?: string;
   sourceUrl?: string;
+  image?: string; // path to a screenshot in /public, e.g. "/projects/prism.png"
   body: string; // MDX body
 };
 
 const CONTENT_DIR = path.join(process.cwd(), "content");
+const PUBLIC_DIR = path.join(process.cwd(), "public");
+
+// Only return the image path if the file actually exists in /public.
+// Lets us pre-fill frontmatter with the intended path — the UI shows a
+// "Screenshot coming" placeholder until the file is dropped in.
+function resolveImage(img?: string): string | undefined {
+  if (!img) return undefined;
+  const rel = img.startsWith("/") ? img.slice(1) : img;
+  return fs.existsSync(path.join(PUBLIC_DIR, rel)) ? img : undefined;
+}
 
 function readDir(dept: string): Entry[] {
   const dir = path.join(CONTENT_DIR, dept);
@@ -47,6 +58,7 @@ function readDir(dept: string): Entry[] {
       stats: data.stats,
       liveUrl: data.liveUrl,
       sourceUrl: data.sourceUrl,
+      image: resolveImage(data.image),
       body: content,
     } as Entry;
   });
@@ -79,6 +91,7 @@ export function getEntry(dept: string, slug: string): Entry | null {
     stats: data.stats,
     liveUrl: data.liveUrl,
     sourceUrl: data.sourceUrl,
+    image: data.image,
     body: content,
   };
 }
@@ -94,7 +107,10 @@ export type Photo = {
 export function getPhotos(): Photo[] {
   const file = path.join(CONTENT_DIR, "photography", "photos.json");
   if (!fs.existsSync(file)) return [];
-  return JSON.parse(fs.readFileSync(file, "utf-8")) as Photo[];
+  const photos = JSON.parse(fs.readFileSync(file, "utf-8")) as Photo[];
+  // Only keep imageSrc if the file exists in /public — otherwise the card
+  // shows its placeholder until you drop the image in.
+  return photos.map((p) => ({ ...p, imageSrc: resolveImage(p.imageSrc) }));
 }
 
 // Parse a title like "AI Merge {Conflict} Resolver" — anything in

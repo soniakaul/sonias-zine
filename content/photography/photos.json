@@ -1,32 +1,32 @@
 [
   {
     "frame": "01",
-    "place": "Monterey, CA · May 2026",
-    "caption": "First open-water dive. Kelp forest light is unreal."
+    "place": "San Diego, CA · Apr 2021",
+    "imageSrc": "/photos/01.jpg"
   },
   {
     "frame": "02",
-    "place": "Chiang Mai, TH · Dec 2025",
-    "caption": "Night market closing time. Fluorescent / tungsten mix."
+    "place": "San Diego, CA · Apr 2021",
+    "imageSrc": "/photos/04.jpg"
   },
   {
     "frame": "03",
-    "place": "Fremont, CA · Apr 2026",
-    "caption": "The Monstera deliciosa is having a moment."
+    "place": "Los Angeles, CA · Jan 2023",
+    "imageSrc": "/photos/03.jpg"
   },
   {
     "frame": "04",
-    "place": "London, UK · Aug 2024",
-    "caption": "Borough Market, 8am, before anyone got there."
+    "place": "Las Vegas, CA · Dec 2021",
+    "imageSrc": "/photos/02.jpg"
   },
   {
     "frame": "05",
-    "place": "Stockholm, SE · 2023",
-    "caption": "The light at 10pm doesn't quit."
+    "place": "Singapore · Jul 2021",
+    "imageSrc": "/photos/05.jpg"
   },
   {
     "frame": "06",
-    "place": "Singapore · 2022",
-    "caption": "Hawker centre, after the dinner rush."
+    "place": "Goa, IN · 2020",
+    "imageSrc": "/photos/06.jpg"
   }
 ]
