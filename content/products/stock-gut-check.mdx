@@ -9,17 +9,434 @@ tags:
   - Supabase
 featured: true
 stats:
-  - label: Read the PRD
-    value: "↗"
   - label: Ship target
     value: ""
-    valueAccent: "Jul 2026"
+    valueAccent: "Jun 2026"
 ---
 
-<p className="lede">
 Stock Gut-Check came from a personal ritual: every Friday, I sit down with my portfolio and decide what the next $500 should buy. Sometimes a new name; sometimes adding to a conviction holding; sometimes nothing. The decision is grounded in a written thesis I revise quarterly, plus the week&rsquo;s news, plus a few hard rules (no single position above 10% of the account, no fractional shares, etc.).
-</p>
 
-The PRD argues that this ritual is productizable — and that the product is more interesting than a portfolio tracker because the *thesis* is persistent context. An AI companion that knows what you believe about the market, applied to your current portfolio and this week&rsquo;s news, produces a *game plan*, not a snapshot.
+The PRD argues that this ritual is productizable — and that the product is more interesting than a portfolio tracker because the *thesis* is persistent context. An AI companion that knows what you believe about the market, applied to your current portfolio and this week&rsquo;s news, produces a *game plan*, not a snapshot. What follows is the full product requirements document, written before any code.
 
-The full PRD lives on Notion. Architecture, scope cuts, success metrics, agent-design principles, and the explicit list of things V1 will *not* do.
+---
+
+<aside className="callout">
+💡
+
+Part of my mission to build mini products to amp up my own life. For all intents and purposes, &ldquo;the customer&rdquo; in this PRD is me, Sonia.
+
+</aside>
+
+---
+
+## TL;DR
+
+Stock Gut-Check is a portfolio companion that productizes the customer&rsquo;s weekly investment ritual — historically a Friday-morning ritual — into a calm, fast decision surface. It has two everyday surfaces: an always-available **on-demand Ticker Gut-Check** (type a symbol, get an instant deterministic verdict plus *streamed* reasoning) and a **Friday Morning Report** that assembles itself quietly across the week (Tue → Thu → Fri) so it&rsquo;s ready before she sits down to trade. A standing **Tax Calendar** tracks the deterministic deadlines that actually move money — short-term → long-term crossovers and wash-sale lockouts. Everything is grounded in a persistent investment thesis (the &ldquo;angle doc&rdquo;), and *every number is computed in code — the LLM only narrates.* **v1 ships end of June 2026 (~25 days)** — primarily single-user, with optional access for a select few friends and a sandboxed demo mode for anyone curious. Success means the customer uses it weekly without reverting to raw LLM prompts, time-on-investing drops from ~3 hours/week to under 45 min, and zero held positions go to zero without prior system flags.
+
+<Stats>
+  <Stat value="~3 hrs → 45 min" label="weekly time-on-investing, target" />
+  <Stat value="~130 hrs" label="returned per year" />
+  <Stat value="25 days" label="to ship v1" />
+  <Stat value="$500/wk" label="real capital deployed" />
+</Stats>
+
+## Problem Alignment (or Opportunity)
+
+#### **Customer Problem**
+
+The customer spends ~1 hour every Friday on a manual portfolio analysis ritual, plus another ~2 hours of scattered research throughout the week. She has a real investment thesis — 1-2 year horizon, AI/tech focused, specific rules around concentration and deployment — but the manual process doesn&rsquo;t consistently apply it. Decisions drift toward whatever&rsquo;s salient that day rather than what fits the framework. LLMs and their &ldquo;deep research&rdquo; features fall short too: every session requires re-explaining the thesis, financial data is approximate (scraped, not API-precise), and there&rsquo;s no memory between runs — so the system never learns her actual patterns or surfaces drift between stated thesis and revealed behavior.
+
+**Evidence of the problem — four real losses:**
+
+<CaseFile n="01" name="ShiftPixy" figure="$2,500 → $0">
+A position held to zero. Basic ongoing research — checking news flow, financial health, delisting risk — would have flagged this well before it bankrupted. A weekly gut-check loop with structured news ingestion catches this kind of slow-motion failure.
+</CaseFile>
+
+<CaseFile n="02" name="Buying highs, selling lows">
+Bought into peak euphoria, sold during war-driven panic. Classic emotional trading — exactly what a thesis-grounded reasoning loop is designed to counter. The angle doc says &ldquo;1-2 year horizon, high-conviction&rdquo;; the actual behavior reflected day-to-day sentiment instead.
+</CaseFile>
+
+<CaseFile n="03" name="SMCI" figure="indictment · late 2024">
+Entered the position when SMCI was doing well, with no system check on governance risk, accounting concerns, or the rising short-interest narrative already circulating in financial media. Within weeks, the indictment news broke and the position cratered. A pre-purchase gut-check that ingested recent news and analyst sentiment — not just price action — would have surfaced the risk signals that were already public, and either delayed the entry or flagged it as off-thesis for a &ldquo;high-conviction, 1-2 year horizon&rdquo; framework.
+</CaseFile>
+
+<CaseFile n="04" name="Concentration drift in AI infra">
+Portfolio has shifted heavily toward AI infrastructure (NVDA, GOOGL, AMD, AVGO, ANET) without an explicit decision to concentrate. Drift happened gradually through weekly additions, not a single conviction call. The angle doc has concentration rules; the manual process never checks them. An automated portfolio health snapshot surfaces this immediately, every week.
+</CaseFile>
+
+#### **Company Alignment**
+
+The company (the project studio) exists to support the customer in reaching her goals and dreams. Stock Gut-Check is uniquely high-leverage because: (1) it productizes an existing weekly behavior, ensuring stickiness; (2) it demonstrates fluency with the LLM-product patterns relevant today: live data integration, persistent user context, structured output, streaming generation, keyboard-first power-user flows, behavioral feedback loops; (3) the artifact compounds — every week of use generates new data the product reasons over, making it the rare side project that gets more valuable with time. There is also a minor mission of the company, which is to make the customer look good while achieving these goals — and the product&rsquo;s aesthetic quality is non-negotiable on this front.
+
+#### **Business Impact**
+
+**1. Time recovered (operational efficiency):** Replaces the ~3 hours/week currently spent on manual portfolio research with a tight Friday loop plus on-demand checks. Annualized: ~130 hours returned to the customer for higher-leverage work. *Target: weekly time-on-investing under 45 minutes with first version of product.*
+
+**2. Capital efficiency (financial outcomes):** Reduces the kind of avoidable losses documented in the Evidence section — bankruptcy holdouts, high-entry/low-exit emotional trades, missed risk signals on new positions. *Target: zero ShiftPixy-class outcomes in the next 12 months. Stretch: measurable improvement in entry/exit timing vs. the prior year baseline.*
+
+**3. Career signal (the real business case).** This is the flagship artifact for the customer&rsquo;s transition into product / forward-deployed / design-engineering roles. It is deliberately built to prove three things hiring teams probe for: LLM-UX literacy (streaming, thought-process disclosure, a visible AI trust boundary), power-user respect (full keyboard operability), and data craft under density (figures that never jank, charts that morph). *Target: a 60–90s demo clip that earns interviews.*
+
+### Why Now
+
+Building this now is also temporally specific: LLM capability has just crossed the threshold where structured-context reasoning over financial data produces reliably useful output (it would have been impossible 18 months ago, table-stakes 18 months from now). The customer also actively deploys $500/week into a real portfolio, meaning every week of delay has a concrete capital-efficiency cost — measurable in avoidable losses like ShiftPixy. And the job search is live *now* — a shipped, demo-able artifact this summer is worth more than a polished one in the fall. The window where this product is differentiated, useful, and personally needed is open now and won&rsquo;t stay open indefinitely.
+
+### Background & Evidence
+
+For a medium-to-long-term investor, according to Stockgro, a weekly analysis is important for a couple reasons:
+
+- smooths out day to day volatility; the underlying direction of a stock is clearer to see
+- potentially reduces impulsive/reactionary trading → the market is only being seen on a schedule, not being watched all the time
+- gained clarity and discipline
+
+---
+
+## Solution Summary
+
+Stock Gut-Check is a portfolio companion that productizes the customer&rsquo;s existing investment ritual. Instead of spending Friday mornings manually pulling prices, scanning news, and trying to remember her own thesis, she opens an app where the week&rsquo;s analysis has already quietly assembled itself — and where she can interrogate any ticker on demand, grounded in her own framework, not a generic financial one.
+
+The product is built around three core ideas: **persistent context** (her investment angle is a first-class artifact, written once and edited deliberately, not re-explained every session), **an invisible weekly build** (the Friday Morning Report pre-fetches and accumulates context across the week — Tuesday and Thursday refreshes happen silently in the background so Friday&rsquo;s read is rich, current, and instant to open), and **compounding insight** (every run logs structured recommendations, so the system surfaces patterns over time that no single chat session could catch — concentration drift, follow-through gaps, recurring off-thesis flags).
+
+<Margin label="Angle doc">The persistent thesis document — written once, edited deliberately, never re-explained. The source of all reasoning, and the soul of the system.</Margin>
+
+The customer touches two surfaces. The **on-demand Ticker Gut-Check** is the flagship: type a symbol, get an instant deterministic verdict chip, and watch the reasoning stream in beneath it across three disclosed sections. The **Friday Morning Report** is the weekly ritual made effortless: a structured verdict on every holding, flags floated to the top, a deployment recommendation for the week&rsquo;s capital. A standing **Tax Calendar** quietly tracks the dates that move money.
+
+<PullQuote attr="The trust boundary">Every number is computed in code — the LLM only narrates.</PullQuote>
+
+### Key Features
+
+- **Investment angle doc** — a persistent markdown document the user writes once and edits as their thinking evolves. It captures: risk tolerance, time horizon, conviction sectors, sectors actively avoided, deployment rules, concentration limits, and any other thesis-defining constraints. Every run reasons against the latest version of this doc. It is the single most important artifact in the product — the source of all reasoning, the soul of the system.
+- **On-demand Ticker Gut-Check (the flagship).** Type any symbol — held or being considered — and get an *instant* deterministic verdict chip (computed in code from live data + cost basis + the angle doc&rsquo;s rules), with the reasoning *streaming* in beneath it across three disclosed sections: **Financial Health**, **Technicals**, and **AI Read**. The verdict resolves whole and immediately; the interpretation arrives live. This is the surface that replaces a raw LLM prompt, and it is the product&rsquo;s demo centerpiece.
+- **Friday Morning Report.** A structured analysis ready Friday morning, covering portfolio health (concentration flags, sector weights, biggest movers), per-holding verdicts (off-thesis, tax-loss candidates, news alerts, wash-sale awareness), suggested actions with reasoning, and a weekly deployment recommendation. Assembled invisibly across the week so it is *ready*, not *generated-on-open*.
+- **Tax Calendar.** A standing, deterministic view of the dates that actually move money: every lot&rsquo;s short-term → long-term crossover date, wash-sale lockout windows, and tax-loss-harvest candidates. Computed entirely in code from the positions file; never estimated by the LLM.
+- **Portfolio CSV upload** — drag-and-drop the J.P. Morgan export to give the system structure (holdings, cost basis, sector classifications, wash-sale flags) without retyping anything.
+- **Per-run inputs** — amount to invest this week (with overrides for compounding or skipping), an optional focus area or question, and optional external tickers to evaluate before buying.
+- **Live data refresh** — the system pulls fresh prices, recent news, and analyst consensus at run time from **Finnhub** (with **Alpha Vantage** for cached fundamentals), so reasoning is always grounded in current reality, not approximated or stale data.
+- **Portfolio cockpit + visualization** — a calm overview surface: allocation by holding/sector, a short-term→long-term crossover timeline, and per-holding sparklines. Charts live here as *progressive disclosure* — one tap from a verdict, never littering the report — and update smoothly on filter change without a page reload.
+- **Command palette (⌘K)** — the entire app is operable from the keyboard: gut-check a ticker, jump to a holding, open the Tax Calendar, generate the report, toggle theme. Faster than clicking, which is the whole point.
+- **Execution log** — a quick post-trade prompt to capture what was actually done vs. recommended, building a personal dataset over time.
+- **Historical insights** — surfaces patterns the user couldn&rsquo;t see manually: thesis drift, follow-through rate by recommendation type, recurring flags across weeks, and gaps between stated thesis and revealed behavior.
+- **Demo mode** — a seeded sample portfolio + angle doc so others can experience the product without uploading their own data.
+
+### What this is *not*
+
+It is not a brokerage, not a trading platform, not a real-time alert system, and not a generic stock recommender. It does not execute trades, optimize for short-term returns, or try to beat the market. It is a *thinking tool* — designed to make weekly decisions more consistent, more grounded, and more reflective of the user&rsquo;s actual framework, while saving meaningful time in the process. The on-demand Gut-Check is *user-initiated*, never a push alert; the calm-by-design ethos is intact.
+
+### Target Users
+
+#### Primary User: The Customer
+
+A medium-to-long-horizon investor with a side appetite for high-reward short-term bets. Her conviction sectors are AI and technology; she also dabbles in energy and metals out of a vague sense that she &ldquo;should&rdquo; diversify, though she doesn&rsquo;t enjoy researching those sectors and doesn&rsquo;t have strong views on them.
+
+Technically, she&rsquo;s a software engineer — comfortable uploading CSVs, editing markdown, reading structured output, navigating any modern web app, and living on keyboard shortcuts. Capability isn&rsquo;t the bottleneck. *Effort is.* She&rsquo;s perfectly capable of doing weekly research; she just doesn&rsquo;t want to. She wants an LLM to ingest the things she finds boring or opaque — earnings reports, investor sentiment, financial fundamentals, news flow — and deliver a structured verdict on what to buy, hold, and sell.
+
+**Before using the product:** working her day job or relaxing. **While using the product:** opens the Friday Morning Report, gut-checks anything she&rsquo;s unsure about, glances at the Tax Calendar. **After using the product:** opens her J.P. Morgan brokerage and executes the trades manually.
+
+**The hard constraint that defines this product:** she will stop using it the moment it requires more work than prompting an LLM directly. Every feature, flow, and friction point has to clear this bar.
+
+<PullQuote>She&rsquo;ll stop using it the moment it requires more work than prompting an LLM directly.</PullQuote>
+
+#### Secondary Users
+
+**Friends who actively invest.** Real users with real portfolios who&rsquo;ll upload their own data and give real feedback. The product should accommodate them as users, not just observers — different angle docs, different portfolios, separate accounts, **their own Anthropic key** (BYOK). They are *not* the design target, but they are the validation pool for whether the product generalizes beyond the customer.
+
+<Margin label="BYOK">Bring-your-own-key — each user supplies their own Anthropic API key, used server-side per request. Builder LLM cost stays at ~zero.</Margin>
+
+#### Explicitly Not For
+
+- **Day traders or short-term active traders.** The product reasons on a 1-2 year horizon. Daily or intraday signals are noise to it.
+- **Investors without a written thesis.** The angle doc is the soul of the product. Without one, the LLM has nothing to reason against and the product becomes a generic stock recommender.
+- **Users of brokerages other than J.P. Morgan.** The app ingests J.P. Morgan&rsquo;s specific CSV format. Other brokerages would require additional parsers.
+- **Beginner investors.** The product assumes the user knows what concentration risk, cost basis, and unrealized G/L mean. It does not teach investing fundamentals.
+- **Anyone seeking tax advice, financial planning, or retirement guidance.** This is not a financial advisor, planner, or fiduciary. It is a thinking tool for self-directed investors. *(The Tax Calendar surfaces deterministic dates and lockouts — it is bookkeeping, not advice.)*
+
+### Definition of Success
+
+Stock Gut-Check succeeds if it changes the customer&rsquo;s weekly investment behavior in measurable ways — and if she actually wants to keep using it. Five outcomes define success:
+
+**1. Weekly run completion rate ≥ 80% over the first 12 weeks post-launch.** Measures stickiness. The product fails if the customer stops using it. A weekly cycle is &ldquo;complete&rdquo; when the Friday Morning Report is reviewed and the week&rsquo;s execution is logged — even if no trades are ultimately made.
+
+**2. Average weekly time-on-investing under 45 minutes by week 4 post-launch.** Measures the efficiency promise. Baseline: ~3 hours/week (1 hour Friday ritual + ~2 hours scattered research). Target: under 45 min weekly average across 4 consecutive weeks. If the product saves the customer less than 2 hours per week, the productization thesis was wrong.
+
+**3. Zero ShiftPixy-class outcomes in the 12 months following launch.** Measures capital protection. No held position should go to zero, near-zero, or delisting without the system having flagged it at least 4 weeks prior. This is the binary, falsifiable check on whether the news ingestion + thesis-grounded reasoning loop actually works.
+
+**4. Off-thesis trim follow-through rate ≥ 70% within 4 weeks of flag.** Measures behavioral influence — the most important quality signal. When the system flags a holding as off-thesis, the user should either (a) trim the position or (b) update the angle doc to formally permit the holding within 4 weeks. A flag that gets ignored without resolution means the system is generating noise, not insight.
+
+**5. Voluntary engagement: ≥ 2 unprompted app opens per week (avg over 4 consecutive weeks) AND ≥ 3 unprompted mentions to non-recruiters in the first 12 weeks post-launch.** Measures delight. Required-loop usage proves utility; unprompted engagement and word-of-mouth prove affection. A product the customer *uses* but doesn&rsquo;t *want to use* fails this bar.
+
+*Measurement window: metrics are tracked from the official ship date (end of June 2026). Weeks 1–12 run roughly July–September 2026; the 12-month capital check lands June 2027; the v1 retrospective happens at week 12 (late September 2026).*
+
+### UX / Design Principles
+
+**1. Less work than the alternative — 5-minute effort budget.** Opening the Friday Report plus any on-demand gut-checks must fit within ~5 active minutes of the user&rsquo;s time. The product&rsquo;s hard constraint is that the moment using it feels like more work than typing a prompt into Claude, the user will revert. Every flow, feature, and friction point is measured against this bar. If a feature can&rsquo;t earn its keep within the 5-minute budget, it doesn&rsquo;t ship.
+
+<Margin label="The hard bar">If it ever feels like more work than typing a prompt into Claude, she reverts. Every decision is measured against this.</Margin>
+
+**2. Verdict-first, reasoning attached — and streamed.** The product leads with a recommendation, then shows why — not the other way around. The lazy-SWE user wants the answer, then the receipt. Every gut-check and every holding delivers a clear verdict (&ldquo;Trim SOFI to 8%&rdquo;, &ldquo;Hold AMD&rdquo;, &ldquo;Add 5 shares NVDA&rdquo;), with reasoning available inline but not in the way — disclosed in **thought-process accordions** that *stream* in live. The deterministic verdict resolves instantly; the generated reasoning arrives token-by-token beneath it. The split is intentional: certainty arrives whole, interpretation arrives live. The system is opinionated by design.
+
+<PullQuote>Certainty arrives whole. Interpretation arrives live.</PullQuote>
+
+**3. Calibrated confidence — say so when you don&rsquo;t know.** The system never fakes certainty. When data is thin or signals conflict, it explicitly says &ldquo;low confidence&rdquo; or &ldquo;insufficient data&rdquo; rather than producing a confident verdict. A system that admits uncertainty earns trust the next time it makes a strong call. Calibrated confidence is what separates a thinking tool from a stock-tip generator.
+
+**4. Progressive disclosure — surface what matters, drill down on demand.** Information appears in layers. Every holding gets a one-line verdict at the surface — scannable as a list even with 25+ positions. Flags float to the top: off-thesis warnings, news alerts, and conviction-shift recommendations get visual emphasis, while &ldquo;hold&rdquo; verdicts on stable conviction names stay quiet at the bottom. Full reasoning, news citations, historical context, and *charts* are one tap away — never on the page by default. The 90-second scan works not because there are few verdicts, but because the *right* ones get attention.
+
+**5. Calm by design — minimalism with a pulse, rigor underneath.** The product feels like a calm room, not a trading floor. No alerts, no flashing, no hustle aesthetic. The visual language is *warm but rigorous*: ocean-inspired in palette (deep navy ink, foam-white canvas, warm sand surfaces, sea-green accent, terracotta for losses rather than alarm-red) with subtle motion that breathes like a slow tide. Underneath the warmth is mathematical discipline — a 4pt spacing grid, a defined type scale (Fraunces display + Hanken Grotesk for UI/data), semantic color tokens, and `tabular-nums` on every figure so prices never jank as they tick. shadcn/ui primitives are *re-skinned* to these tokens, never shipped default. Signature accents (a whale-tail loading state, an empty-state illustration) appear sparingly to give the product personality without ever crossing into themed-ness. The product should feel like something the customer is proud to show — beautiful enough to signal taste, restrained enough to signal seriousness.
+
+**6. Keyboard-first — respect the power user.** The entire app is operable from the keyboard. ⌘K opens a command palette to gut-check a ticker, jump to a holding, open the Tax Calendar, generate the report, or toggle theme; arrow keys and `j/k` move within lists and results; every interactive element has a visible focus ring. This isn&rsquo;t a power-user garnish — for the lazy-but-capable SWE, keyboard navigation is *less work*, which is the first principle restated.
+
+---
+
+## Scope & Capabilities
+
+Stock Gut-Check v1 is a single-user web application that productizes the customer&rsquo;s weekly investment ritual. **In scope:** a persistent investment angle doc, J.P. Morgan portfolio CSV ingestion, an on-demand Ticker Gut-Check with streamed reasoning, a Friday Morning Report covering every held position plus optional new-buy candidates, a deterministic Tax Calendar, a portfolio cockpit with progressive-disclosure visualization, full keyboard navigation, structured logging of recommendations and execution decisions, and a demo mode for friends. **Explicitly out of scope:** trade execution, brokerage integrations beyond CSV upload, configurable cadence (other than the fixed weekly rhythm), multi-user accounts at scale, mobile native apps, AI-suggested angle doc updates, technical-analysis charting (candlesticks, RSI, options chains), and any form of financial advice or planning. The product is a thinking tool, not a brokerage or advisor.
+
+*Scope note for the 25-day v1:* to hit the end-of-June ship, v1 prioritizes the **interactive, demo-able core** (see Release Plan). The fully automated weekly cron + email delivery, the execution-log analytics and longitudinal insight surfacing, sparkline/timeline charts, and demo-mode polish are staged into **v1.5 (July)**. v1 generates the Friday Report on demand; v1.5 makes it arrive on its own.
+
+### Key Capabilities (AI + Human Friendly)
+
+The system&rsquo;s capabilities group into four layers: what the user puts in, what the system reasons over, what it delivers, and how it learns over time.
+
+**Inputs:**
+
+- **Persistent investment thesis (the angle doc).** A structured, editable document defining the user&rsquo;s risk tolerance, sector focus, time horizon, deployment rules, and explicitly avoided sectors. Persists across sessions, editable in-app, version-tracked.
+- **J.P. Morgan portfolio CSV ingestion.** Parses the standard J.P. Morgan positions export — holdings, ticker, quantity, cost basis, asset strategy, footnote flags. Filters cash sweeps and zero-value positions. Persists the structured portfolio. *Open pre-build item: confirm whether the cost-basis / tax-lot export is the same file as positions.csv or a separate export — the Tax Calendar depends on lot-level basis.*
+- **Per-run input customization.** Each run accepts: amount available to invest (with overrides for compounding from a skipped week or skipping this week entirely), an optional focus area or question, and optional external tickers to evaluate.
+- **Bring-your-own Anthropic key (BYOK).** The customer (and any friend) supplies their own Anthropic API key, used server-side per request. Keeps the product&rsquo;s LLM costs at zero-to-the-builder and lets friends/demo users run without burning the customer&rsquo;s budget.
+
+**Reasoning:**
+
+- **Live market data refresh.** For every held position, retrieves current price, today&rsquo;s movement, P/E, and analyst consensus from **Finnhub** (live quotes + WebSocket for the cockpit ticker), with **Alpha Vantage** for cached fundamentals that don&rsquo;t move intraday. Live data takes precedence over CSV-embedded prices.
+- **Per-holding news aggregation.** Pulls company news and sentiment for each held position over the most recent 7-day window via **Finnhub**, with sufficient context for the LLM to reason about material events. *(Consolidating news onto Finnhub removes the separate NewsAPI dependency from v1.)*
+- **Deterministic portfolio + tax metrics.** Sector concentration, position size as % of portfolio, biggest movers of the week, total exposure, unrealized G/L, short-term→long-term crossover dates, wash-sale lockout windows, and after-tax proceeds are computed **in code — never by the LLM** — before any reasoning step. These live in a pure, unit-tested finance module; the LLM receives the computed facts as structured context and *narrates* them. This trust boundary is the product&rsquo;s spine.
+- **Streamed game-plan generation.** Produces a verdict (buy more / hold / trim / sell / watch) for every held position and for any on-demand ticker, with attached reasoning and calibrated confidence, streamed token-by-token into thought-process accordions. Optionally includes new-buy or watchlist recommendations and a recommended deployment for the week&rsquo;s available capital.
+- **Portfolio health flagging.** Off-thesis holdings, concentration breaches against angle-doc rules, wash-sale awareness, and tax-loss harvest candidates are explicitly flagged and floated to the top of the report.
+- **On-demand external ticker evaluation.** Given a ticker the user is considering buying, fetches live data and news and evaluates it against the angle doc and current portfolio context — producing a clear verdict and streamed reasoning before any purchase decision. *(This is the flagship Ticker Gut-Check; it carries the SMCI lesson — give new positions the same rigor as held ones.)*
+
+**Delivery:**
+
+- **Friday Morning Report.** Ready Friday morning, assembled invisibly across the week (Tuesday + Thursday background refreshes). In v1, opened in-app on demand; in v1.5, delivered via a brief Friday-morning email nudge — subject line &ldquo;Your Friday game plan is ready&rdquo; — with a link to the full app view. No report content rendered in the email itself; the app is the product&rsquo;s home.
+- **On-demand Ticker Gut-Check.** Available any time from the cockpit or ⌘K. User-initiated, never a push.
+- **Tax Calendar.** A standing surface, always current, showing upcoming crossover dates and lockouts.
+- **Sandboxed demo mode.** A dedicated `/demo` route, accessible from a &ldquo;Try without signing up&rdquo; link on the public landing page. Seeded with a sample portfolio and angle doc; no writes affect real user data. Directly shareable.
+
+**Learning Loop:**
+
+- **Execution decision capture.** Logs what the user actually bought, sold, held, or ignored after each weekly cycle. The cycle is not considered complete until the execution log is filled out — this becomes the formal end-of-cycle gate.
+- **Historical recommendation tracking and longitudinal insights.** Persists every report, every execution decision, and every angle-doc version. Surfaces non-obvious patterns: recurring off-thesis flags, follow-through gaps, thesis drift between stated and revealed behavior, recommendations that aged well or poorly, and concentration trends over time. Insights appear in the report as relevant, not as a separate dashboard. *(Full surfacing is a v1.5 capability — see Scope note.)*
+
+### In-Scope: Detailed User Stories
+
+#### Primary Persona: The Customer (the lazy-but-capable SWE investor)
+
+**P0 — Must work for v1 to be usable at all**
+
+**S1.** As the customer, I want to upload my J.P. Morgan portfolio CSV in under 30 seconds, so that I never have to manually retype my holdings.
+
+**S2.** As the customer, I want to write and edit my investment angle doc in plain language, so that the system reasons against my actual thesis instead of a generic financial framework.
+
+**S3.** As the customer, I want to type any ticker and get an instant verdict with reasoning that streams in beneath it, so that I can interrogate a holding or a potential buy faster than prompting an LLM — and give new positions the same rigor as held ones (avoiding another SMCI-class entry).
+
+**S4.** As the customer, I want every recommendation to lead with the verdict and disclose reasoning on demand, so that I can act fast on calls I trust and dig deeper on calls I question.
+
+**S5.** As the customer, I want a Friday Morning Report with a verdict on every holding, ready when I sit down, so that I can review my portfolio without doing manual research.
+
+**S6.** As the customer, I want the system to flag holdings that no longer fit my thesis, so that I catch concentration drift and off-thesis positions before they cost me capital.
+
+**S7.** As the customer, I want a standing Tax Calendar of crossover dates and wash-sale lockouts computed from my real lots, so that I never sell a position one day before it goes long-term or trip a wash-sale by accident.
+
+**S8.** As the customer, I want to specify how much capital I have to deploy this week (with options to compound from a skipped week or skip entirely), so that the system&rsquo;s recommendations match my actual cash situation.
+
+**S9.** As the customer, I want to operate the whole app from the keyboard via ⌘K, so that using it is faster than clicking and never feels like work.
+
+**S10.** As the customer, I want to log what I actually executed each week in under a minute, so that the system can learn from my real behavior over time.
+
+**P1 — Important but not blocking v1 launch**
+
+**S11.** As the customer, I want the system to surface non-obvious patterns from my history — recurring flags, thesis drift, follow-through gaps — so that I learn things about my own behavior I couldn&rsquo;t see week-to-week.
+
+**S12.** As the customer, I want the system to express low confidence when data is thin or signals conflict, so that I trust the strong calls more.
+
+**S13.** As the customer, I want the portfolio cockpit to visualize allocation and crossover timing, updating smoothly when I filter, so that I can see concentration and tax timing at a glance without leaving the verdict-first flow.
+
+**S14.** As the customer, I want all of this delivered in a calm, beautiful interface that I&rsquo;m proud to open, so that the tool feels like something I built with care, not a side-project prototype.
+
+#### Secondary Persona: Friends Who Invest
+
+**S15.** As a friend with my own portfolio, I want to set up an account with my own angle doc, CSV, and Anthropic key, so that I can use the product for my own decisions, not just observe the customer&rsquo;s.
+
+#### Tertiary Persona: Recruiters / Hiring Managers
+
+**S16.** As a recruiter visiting the demo link, I want to gut-check a ticker and watch the verdict resolve and reasoning stream in — with sample data, in under 60 seconds — so that I can assess the product&rsquo;s quality and the depth of thinking without needing to sign up or upload anything.
+
+### Out of Scope
+
+The following are explicitly excluded from v1, with reasoning. Each exclusion protects focus, the 5-minute effort budget, and the (now compressed) ship date.
+
+**Trade execution and brokerage integration beyond CSV upload.** The product never places trades. The user manually executes in J.P. Morgan after reviewing recommendations. Excluded because: (1) brokerage integration involves regulatory complexity the studio is not equipped for; (2) keeping execution manual preserves user agency on every trade; (3) Plaid or similar auto-pull is deferred to v2 if multi-user demand emerges.
+
+**Configurable cadence (daily, custom days, alternate rhythms).** The weekly rhythm with a Friday-morning culmination is hardcoded. Excluded because: (1) the target investment style — 1-2 year horizon, weekly $500 deployment — does not benefit from daily analysis and could be actively harmed by it; (2) configurable cadence adds engineering complexity without validated demand; (3) the weekly ritual is core to the product&rsquo;s narrative. Will revisit in v2 only if 30%+ of users explicitly request alternate cadence.
+
+**Technical-analysis charting (candlesticks, RSI, indicators, options chains, intraday tick charts).** The product produces verdicts and reasoning; it does not produce trader-style technical charts. Excluded because: (1) the target user does not make decisions on technical analysis; (2) the 1-2 year horizon makes intraday patterns noise; (3) it contradicts verdict-first. *Note: this is distinct from the portfolio visualization that is now in scope — allocation, concentration, and crossover-timing charts are decision context, not technical analysis.*
+
+**Multi-user accounts at scale.** v1 supports a small number of users (the customer + a few friends + others via demo mode) with lightweight Supabase Auth. Excluded from v1: account management UI, team accounts, sharing, social features, comment systems. The product is not a SaaS in v1; it is a personal tool that two or three friends can also use.
+
+**Mobile native apps.** v1 is web-only, mobile-responsive. No iOS or Android app. Excluded because: (1) the weekly cadence does not require mobile-native experience; (2) the app + (v1.5) email handle the &ldquo;check from anywhere&rdquo; use case; (3) building two native apps would more than double the engineering scope.
+
+**AI-suggested angle doc updates.** The system tracks revealed-preference drift but does not yet propose specific angle doc edits. Deferred to v2.5 because: (1) it requires several weeks of historical data to be meaningful; (2) the UX for proposing diffs to a personal thesis document needs careful design that the timeline doesn&rsquo;t allow; (3) it is the strongest v2.5 differentiator and warrants dedicated design time rather than being rushed.
+
+**Automated weekly cron + email delivery, execution-log analytics, longitudinal insight surfacing (deferred to v1.5, not v2).** These are *in the product vision* but staged out of the 25-day v1 to protect the ship date. v1 generates the report on demand and logs decisions; v1.5 automates the Tue→Thu→Fri pre-fetch, the Friday email nudge, and the historical pattern surfacing.
+
+**Financial advice, tax planning, retirement guidance, or fiduciary recommendations.** The product is a thinking tool, not a registered investment advisor. The Tax Calendar surfaces deterministic dates and lockouts — bookkeeping, not advice. It does not produce tax forms, retirement projections, estate planning, or formal advice. Excluded for regulatory reasons and because the product&rsquo;s value comes from being a personal reasoning loop, not a planning service.
+
+**Brokerages other than J.P. Morgan.** The CSV parser is hardcoded to J.P. Morgan&rsquo;s positions export format. Excluded because v1 is built for the customer, who uses J.P. Morgan; supporting others requires per-broker parsers; deferred to v2 if friends pull through demand.
+
+**Beginner-investor onboarding, education, or glossaries.** The product assumes the user understands cost basis, concentration risk, unrealized G/L, and basic portfolio concepts. Excluded because the target user is not a beginner and educational content would balloon scope.
+
+**Backtesting recommendations against historical performance.** v1 logs recommendations and execution decisions but does not retroactively measure returns. Deferred because it requires longitudinal data the product won&rsquo;t have for ~6 months and attribution is methodologically difficult.
+
+**Real-time alerts, push notifications, breaking news pings.** No real-time push, SMS, or in-app live alerts. The on-demand Gut-Check is user-initiated. Excluded because it violates &ldquo;calm by design,&rdquo; the weekly cadence is the product, and the user has explicitly named &ldquo;spammy&rdquo; as a fail state.
+
+---
+
+## Delivery, Risks & Open Questions
+
+### Release Plan & Milestones
+
+Stock Gut-Check v1 ships **by end of June 2026** — a ~25-day window from June 6. This is an aggressive compression from the original end-July date, made deliberately: the job search is live and a shipped, demo-able artifact now beats a polished one later. The plan is structured in five short sprints, each with a falsifiable &ldquo;done when…&rdquo; check. The ship **date is fixed**; *scope* is the release valve. If a sprint slips 3+ days, the slipping work moves to v1.5 rather than pushing the date.
+
+<Timeline>
+
+<Sprint label="Sprint 0" date="Jun 6–9" title="Foundation + design system">
+Next.js (App Router) scaffold deployed to Vercel. Supabase initialized with schema for users, angle docs, portfolios, runs, recommendations, execution logs. Lightweight magic-link auth. J.P. Morgan CSV parser working against the real `positions.csv` fixture. The warm-but-rigorous token layer stood up: Fraunces + Hanken, 4pt grid, semantic colors, `tabular-nums`, shadcn re-skinned. *Done when: the customer can sign in, upload her CSV, and see her holdings in an on-brand, re-skinned table.*
+</Sprint>
+
+<Sprint label="Sprint 1" date="Jun 10–14" title="Deterministic finance core + data layer">
+The pure, unit-tested finance module: cost basis, ST→LT crossover, wash-sale windows, concentration, unrealized G/L, after-tax proceeds. Finnhub integration (quotes + news/sentiment) behind API routes; Alpha Vantage cached fundamentals. *Done when: the portfolio renders with live prices and every derived metric computes correctly, with the finance module&rsquo;s tests green.*
+</Sprint>
+
+<Sprint label="Sprint 2" date="Jun 15–19" title="The flagship: on-demand Ticker Gut-Check">
+Verdict chip (deterministic) + streamed reasoning across three accordions via the Anthropic Messages API (SSE, BYOK). Angle-doc editor (markdown, persisted). ⌘K command palette wired as primary navigation. *Done when: typing a ticker yields an instant verdict chip plus streaming reasoning grounded in the angle doc and live data, and ⌘K reaches every surface.*
+</Sprint>
+
+<Sprint label="Sprint 3" date="Jun 20–24" title="Friday Report + Tax Calendar + cockpit">
+On-demand-generated Friday Morning Report (verdict on every holding, flags floated up, deployment rec), built to the design bar. Deterministic Tax Calendar view. Cockpit with allocation chart + comparison matrix; charts animate on filter. *Done when: the customer can generate a full Friday Report from her real portfolio and angle doc that meets the design quality bar, the Tax Calendar shows her real crossover dates, and chart filters update smoothly.*
+</Sprint>
+
+<Sprint label="Sprint 4" date="Jun 25–30" title="Polish, demo, dogfood, ship">
+Seeded demo mode, disclaimer placement, error handling for malformed CSVs and API failures, mobile-responsive pass. Record the 60–90s demo clip (⌘K → gut-check → streamed verdict → filter the chart). Write the launch post. Dogfood one real Friday cycle. *Done when: the customer would proudly send the demo link to a recruiter without caveats, and one clean cycle has run.*
+</Sprint>
+
+</Timeline>
+
+**v1 ships: by June 30, 2026.**
+
+#### How outcomes will be evaluated post-launch
+
+The five Definition of Success metrics are tracked starting from the official ship date (end of June):
+
+- **Weekly run completion rate ≥ 80%** — measured over weeks 1-12 (Jul–Sep 2026)
+- **Average weekly time-on-investing under 45 min by week 4** — measured weekly, target hit by late July 2026
+- **Zero ShiftPixy-class outcomes in 12 months** — checked at the 12-month mark (June 2027)
+- **Off-thesis trim follow-through ≥ 70% within 4 weeks of flag** — measured continuously starting week 1
+- **Voluntary engagement (≥2 unprompted opens/week, ≥3 unprompted mentions in first 12 weeks)** — tracked via session logs and a personal weekly journal entry
+
+A v1 retrospective happens at week 12 post-launch (late September 2026). Outcomes are reviewed against targets. v1.5 scope is finalized based on what worked, what didn&rsquo;t, and what the early longitudinal data revealed.
+
+### Constraints & Assumptions
+
+#### Constraints
+
+**Resources:**
+
+- Solo builder. No engineering team, no designer, no PM other than the user.
+- ~9-12 hours/week of focused build time, drawn from weekday evenings and partial weekends — *now shared with two design courses (Shift Nudge, The Joy of React) plus Refactoring UI.* The course load is a real draw on the same hours and is treated as a named risk (R7, R11).
+- Cisco day job takes priority during 9-5; the project happens around it.
+- The end-of-June 2026 ship is the committed date. *Scope*, not the date, absorbs slippage: work that slips 3+ days moves to v1.5.
+
+**Technical:**
+
+- J.P. Morgan positions CSV is the only portfolio format supported in v1. Other brokerages require dedicated parsers and are deferred to v2.
+- **Finnhub** is the live market-data + news/sentiment source (60 calls/min free tier, free WebSocket); **Alpha Vantage** provides cached fundamentals (P/E, market cap) that tolerate its ~25-call/day free tier. `yahoo-finance2` is explicitly rejected (unofficial, breakage-prone, TOS risk); NewsAPI is dropped in favor of Finnhub news.
+- **Claude via the Anthropic Messages API (BYOK)** is the sole LLM in v1, with SSE streaming. A fast tier (Sonnet/Haiku) handles routine gut-checks; the longer Friday Report can use a stronger model. Model IDs are pinned snapshots, bumped deliberately. Multi-LLM support is out of scope.
+- Frontend: Next.js App Router, TypeScript, Tailwind, shadcn/ui (re-skinned to tokens), Framer Motion (reserved for the streaming reveal and chart morphs), Recharts (raw, styled by hand).
+- Deployment is Vercel; storage and auth are Supabase. No self-hosted infrastructure.
+- Web only, mobile-responsive. No native iOS or Android app.
+
+**Legal / Regulatory:**
+
+- The product is not a registered investment advisor and cannot provide personalized fiduciary financial advice.
+- The product is not a brokerage and never executes trades; users execute manually in J.P. Morgan.
+- A clear UI disclaimer (&ldquo;Stock Gut-Check is a personal thinking tool, not financial advice. Every trade is yours to make, your responsibility, and yours to live with.&rdquo;) appears in the application — visible but unobtrusive, in keeping with the calm-by-design principle. Surface placement: footer of every page plus a one-time acknowledgment on first sign-in.
+- Demo mode and friends-as-users see the same disclaimer prominently. The product is positioned as experimental and personal, not as a financial service.
+
+#### Assumptions
+
+Each of the following is an unvalidated bet. If wrong, it materially affects v1 success.
+
+- **The customer will use the product weekly post-launch.** The entire success of the project depends on this. If she reverts to manual analysis or to raw LLM prompts, the productization thesis was wrong. The 5-minute effort budget principle is the primary mitigation, but actual usage cannot be fully predicted from a PRD.
+- **The 25-day v1 scope is achievable at ~9-12 hrs/week alongside the design courses.** The most fragile new bet in v2 of this PRD. Mitigation: the date is fixed and scope is the valve — the staged v1/v1.5 split means a slip degrades to a smaller v1, not a missed launch.
+- **Claude&rsquo;s reasoning over structured portfolio data + news context will produce useful, non-generic recommendations.** LLM output quality for this specific use case has not been validated end-to-end. Sprint 2 includes deliberate prompt iteration; if outputs are mediocre, the product needs a hard look before continuing.
+- **J.P. Morgan will not change their CSV export format during the build window or the first 12 months.** A schema change would break ingestion. Mitigation: parser fails loudly on unexpected columns rather than producing silently wrong data.
+- **Finnhub and Alpha Vantage will return the needed fields without breaking changes, within free-tier limits.** Lower risk than the original yahoo-finance2 bet — both are official APIs, not unofficial wrappers. Mitigation: both are wrapped in a thin abstraction so a swap is contained; fundamentals are cached to respect Alpha Vantage&rsquo;s tight daily limit.
+- **2-3 friends will actually want to use the product and provide feedback.** The secondary persona is real only if real users show up. If no friends opt in within 4 weeks of launch, the secondary persona collapses to &ldquo;demo mode for recruiters only.&rdquo;
+- **The customer&rsquo;s investment horizon and thesis remain stable through the build window.** If her thesis shifts substantially during June, the angle doc design becomes a moving target.
+
+### Open Questions & Risks
+
+#### Open Questions
+
+**Q1. Financial data API selection. ✅ RESOLVED.** **Finnhub** for live quotes + WebSocket + company news/sentiment; **Alpha Vantage** (cached) for slow fundamentals. `yahoo-finance2` rejected; NewsAPI dropped. (Superseded the original May 25 decision deadline.)
+
+**Q2. Brokerage support for secondary users.** v1&rsquo;s CSV ingestion is hardcoded to J.P. Morgan. If interested friends use other brokerages, they&rsquo;ll need either a manual-entry fallback (~3 hours of scope) or to wait for v2. Deferred until potential users are identified and their brokerages confirmed.
+
+**Q3. How aggressively should longitudinal insights surface?** Every week? Only when a pattern crosses a threshold (e.g., 3 ignored flags, 15% sector drift)? Risk: too aggressive = noisy; too conservative = invisible. Now a v1.5 question (insights deferred); launches with conservative hardcoded thresholds, loosened based on dogfooding.
+
+**Q4. Concentration thresholds in the angle doc — plain text or structured rules?** Likely hybrid: the angle doc stays plain text, but the LLM extracts structured rules into a machine-readable schema for *deterministic* enforcement in the finance module. This aligns with the trust boundary — rules are *checked* in code, never by the LLM. Resolution: Sprint 1–2.
+
+**Q5. Handling of partial / failed weekly runs.** What constitutes a &ldquo;completed&rdquo; run for the success metric if the customer opens the report but never logs execution, or if a data fetch fails? Definition needs to be falsifiable but generous on minor edge cases. Resolution: Sprint 3.
+
+**Q6. BYOK key handling for friends and demo.** Where does a friend&rsquo;s Anthropic key live, and how is it protected? Demo mode must run without exposing any key. Resolution: Sprint 2 (server-side per-request use; never stored in the client; demo uses a rate-limited shared path or a canned response).
+
+#### Risks
+
+**R1. The &ldquo;why not just a scheduled Claude run&rdquo; challenge.** A reasonable challenge is that a scheduled prompt to Claude — angle doc baked in, web search on — could deliver weekly commentary in 2 hours of setup vs. ~100 hours of building. Stock Gut-Check exists because three things scheduled-LLM approaches fundamentally cannot do: (1) reason over precise structured portfolio data with *deterministic* computation, not LLM-approximated math; (2) maintain persistent state across runs to surface longitudinal insights — recurring flags, follow-through patterns, thesis drift — that only become visible over time; and (3) close the feedback loop between recommendation and execution, so the system gets calibrated to actual behavior. The honest framing: a v0 could ship as a scheduled prompt in 2 hours. v1 exists because the parts that *aren&rsquo;t* a scheduled prompt — structured ingestion, deterministic math, the visible trust boundary, persistent memory, execution feedback — are exactly what makes it stop being a chat tool and start being a product.
+
+**R2. LLM output quality may not clear the bar for confident recommendations.** Sprint 2 validates this. If first real gut-checks are generic, hedged, or factually shaky, the product needs a hard look — more aggressive prompt engineering, possibly a tool-use approach (LLM as orchestrator over deterministic data fetches), possibly admission that current models aren&rsquo;t there yet. Mitigation: dedicate a focused block of Sprint 2 to prompt iteration with real data. Fallback: scope down to &ldquo;structured data cockpit with optional LLM commentary&rdquo; rather than abandon.
+
+**R3. The customer doesn&rsquo;t actually use the product post-launch.** The most important risk in the entire PRD. If she reverts to manual analysis or raw prompts, all five success metrics fail. Mitigation: the 5-minute budget principle is the primary guard; the on-demand Gut-Check is designed to be *faster* than a raw prompt. If voluntary engagement falls below 1 unprompted open/week by week 4, treat it as a full product review trigger.
+
+**R4. J.P. Morgan changes their CSV export format.** A schema change could break ingestion. Mitigation: parser asserts on expected columns and fails loudly with a clear error rather than producing wrong data. The customer is the only person who&rsquo;d encounter this in v1.
+
+**R5. Hallucinated financial data in LLM output.** Even with structured context, the LLM might quote prices, dates, or analyst opinions inaccurately. Mitigation: every quantitative claim must be sourced from the structured input data, not invented — and the architecture enforces this by computing all numbers in the finance module and passing them in as facts the model only narrates. The verdict chip is deterministic; the model cannot move it. Spot-checks during dogfooding.
+
+**R6. Aesthetic miss on the design vision.** The &ldquo;warm but rigorous, calm, minimalist with a pulse&rdquo; direction is opinionated and ambitious for a solo builder with limited design time. Real risk the result looks worse than no theme at all. Mitigation, strengthened in v2: the design system is now *formalized* (tokens, type scale, grid, semantic color) rather than vibes — which is exactly what de-risks execution. Reference real products (Linear, Things 3, Wealthfront) for tonal calibration. Cut accents that don&rsquo;t reach the bar rather than ship them mediocre. The two design courses directly serve this risk.
+
+**R7. Burn-out or energy collapse mid-build — amplified by compression and coursework.** The 25-day window is intense, and it overlaps peak summer recruiting, GMAT maintenance, and two design courses drawing on the same evenings. Mitigation: the fixed-date / flexible-scope rule means the project can always ship *something* real; there is explicit permission to cut v1 scope to v1.5 rather than grind. No 20-hour weeks.
+
+**R8. Cisco workload volatility.** Cisco day-job intensity could spike and inhibit build work. Mitigation: the staged v1/v1.5 split absorbs lost time by shrinking v1 rather than slipping the date.
+
+**R9. Loss of interest mid-build.** The middle of any build is where motivation collapses. Mitigation: the flagship on-demand Gut-Check (Sprint 2) produces a real, usable, *delightful* payoff early — a personal reason to keep going before the polish work. Public artifact pipeline (PRD shared, job conversations live) creates external accountability.
+
+**R10. Better tool emerges or already exists.** A real fear: another product ships higher-quality recommendations than this build. Mitigation: the moat isn&rsquo;t recommendation quality — it&rsquo;s persistent state + the customer&rsquo;s specific angle doc + execution feedback over time, none of which any external tool can see. The artifact&rsquo;s career value is independent of whether a better generic tool exists. The product is not for sale; it&rsquo;s for the customer.
+
+**R11. The 25-day compression forces a thinner v1 than envisioned.** New in v2. The compressed window plus added scope (charts, keyboard, full token system, streaming) plus coursework means v1 will likely ship without automated delivery and full longitudinal insights. Mitigation: this is *planned*, not a failure — the v1/v1.5 staging is explicit, and the demo-able core (the part that earns interviews and gets used) is what v1 protects.
+
+#### Dependencies
+
+**D1. Anthropic API access (BYOK).** Assumes the Anthropic API remains accessible at current pricing. With bring-your-own-key, cost-to-the-builder is ~zero and friends/demo don&rsquo;t draw on the customer&rsquo;s budget — which also de-risks the original &ldquo;cost only matters if friends push volume&rdquo; concern.
+
+**D2. Vercel free tier limits.** Vercel&rsquo;s free tier handles a hobby project at this scale comfortably. Cron jobs (v1.5), edge functions, and deployments all fit.
+
+**D3. Supabase free tier limits.** Row limits, auth users, and storage are all well within free tier for ~3 users + demo mode.
+
+### Forward-Looking Roadmap
+
+Stock Gut-Check v1 is the demo-able, personally-useful core; subsequent versions evolve based on what dogfooding and real behavior reveal. **v1.5 (July 2026)** completes the weekly loop: automated Tue→Thu→Fri pre-fetch via Vercel Cron, the Friday email nudge via Resend, execution-log capture and longitudinal insight surfacing, sparkline/crossover-timeline charts, a dark &ldquo;after-hours&rdquo; theme derived from the same tokens, and demo-mode polish. **v2** opens the product to broader users: configurable cadence (if 30%+ want something other than weekly), additional brokerage CSV parsers, and a manual portfolio entry fallback. **v2.5** is the most ambitious — the AI proposes specific edits to the angle doc when it detects drift between stated and revealed preferences, turning the angle doc into a negotiated artifact between user and system rather than a static thesis. **v3 and beyond** is deliberately undefined; the customer commits to letting actual usage data shape the next horizon rather than pre-specifying it.
+
+<aside className="callout">
+💡
+
+**Different from What I Build at Cisco:**
+
+The customer is a software engineer at Cisco working on infrastructure tooling. This product is a deliberate departure from that work in three ways: (1) it&rsquo;s user-facing rather than infrastructure, (2) it requires product taste rather than systems correctness, (3) it&rsquo;s shipped solo end-to-end rather than as part of a team. Building this is itself part of the customer&rsquo;s transition from infrastructure SWE toward product/FDE/design-engineering roles. The PRD itself is part of that transition — written before any code, deliberately as a document that demonstrates product thinking independent of the eventual product.
+
+</aside>

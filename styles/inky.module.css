@@ -179,6 +179,39 @@
   opacity: 1;
 }
 
+/* ============ "Press my belly" attention hint ============ */
+.hinting .tooltip {
+  opacity: 1;
+  animation: hintBob 1.3s ease-in-out infinite;
+}
+
+@keyframes hintBob {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50%      { transform: translateX(-50%) translateY(-4px); }
+}
+
+.hinting .belly {
+  animation: bellyPulse 1.3s ease-in-out infinite;
+}
+
+@keyframes bellyPulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 0 rgba(184, 137, 58, 0));
+  }
+  50% {
+    transform: scale(1.22);
+    filter: drop-shadow(0 0 5px rgba(184, 137, 58, 0.9));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hinting .tooltip,
+  .hinting .belly {
+    animation: none;
+  }
+}
+
 .tooltip::after {
   content: '';
   position: absolute;
@@ -329,6 +362,73 @@
 
 .overlayInput::placeholder {
   color: var(--ink-faded);
+}
+
+.overlayChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+.overlayChip {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+  background: transparent;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  padding: 8px 15px;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.overlayChip:hover {
+  border-color: var(--gold);
+  color: var(--ink);
+  background: rgba(184, 137, 58, 0.06);
+}
+
+.overlayAnswer {
+  max-width: 580px;
+  margin: 28px auto 0;
+  font-family: 'Source Serif 4', serif;
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--ink);
+  text-align: left;
+  white-space: pre-wrap;
+  max-height: 42vh;
+  overflow-y: auto;
+}
+
+.answerLink {
+  color: var(--gold-deep);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  word-break: break-word;
+  transition: color 0.2s;
+}
+
+.answerLink:hover {
+  color: var(--ink);
+}
+
+.cursor {
+  display: inline-block;
+  width: 7px;
+  height: 18px;
+  margin-left: 2px;
+  background: var(--gold-deep);
+  vertical-align: text-bottom;
+  animation: inkyBlink 1s steps(2) infinite;
+}
+
+@keyframes inkyBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
 }
 
 .overlayHint {

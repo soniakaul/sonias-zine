@@ -20,9 +20,9 @@ export default function ProductsPage() {
       </div>
 
       <h2 className="spread-headline">
-        The long arc from <em>engineer</em>
+        The arc from <em>engineering</em>
         <br />
-        to product person.
+        to product.
       </h2>
 
       <p className="spread-deck">

@@ -7,7 +7,7 @@
   {
     "frame": "02",
     "place": "San Diego, CA · Apr 2021",
-    "imageSrc": "/photos/04.jpg"
+    "imageSrc": "/photos/02.jpg"
   },
   {
     "frame": "03",
@@ -17,7 +17,7 @@
   {
     "frame": "04",
     "place": "Las Vegas, CA · Dec 2021",
-    "imageSrc": "/photos/02.jpg"
+    "imageSrc": "/photos/04.jpg"
   },
   {
     "frame": "05",
@@ -26,7 +26,12 @@
   },
   {
     "frame": "06",
-    "place": "Goa, IN · 2020",
+    "place": "Singapore · Jan 2021",
     "imageSrc": "/photos/06.jpg"
+  },
+  {
+    "frame": "07",
+    "place": "Goa, IN · Mar 2020",
+    "imageSrc": "/photos/07.jpg"
   }
 ]

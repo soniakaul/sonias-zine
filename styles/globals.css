@@ -12,6 +12,7 @@
   --ink-faded: #6b6258;
   --gold: #b8893a;
   --gold-deep: #8a6628;
+  --loss: #b5552f;
   --rule: rgba(26, 24, 20, 0.35);
   --rule-soft: rgba(26, 24, 20, 0.15);
 }
@@ -272,6 +273,8 @@ a {
    ============================================================ */
 .spread {
   min-height: 100vh;
+  max-width: 1440px;
+  margin-inline: auto;
   padding: 80px 64px 120px;
   border-top: 1px solid var(--ink);
   position: relative;
@@ -732,6 +735,7 @@ a {
 
 .body-col {
   grid-column: 2;
+  position: relative;
   font-size: 17px;
   line-height: 1.6;
   color: var(--ink);
@@ -742,7 +746,7 @@ a {
   margin-bottom: 18px;
 }
 
-.body-col p.lede::first-letter {
+.body-col > p:first-of-type::first-letter {
   font-family: 'Fraunces', serif;
   font-weight: 300;
   font-size: 84px;
@@ -753,7 +757,7 @@ a {
   font-variation-settings: "opsz" 144, "SOFT" 30, "WONK" 1;
 }
 
-.body-col p.lede::first-line {
+.body-col > p:first-of-type::first-line {
   font-variant: small-caps;
   letter-spacing: 0.05em;
   font-weight: 500;
@@ -767,6 +771,476 @@ a {
   line-height: 1.1;
   margin: 32px 0 16px;
   font-variation-settings: "opsz" 60, "SOFT" 30;
+}
+
+.body-col h3 {
+  font-family: 'Fraunces', serif;
+  font-weight: 400;
+  font-size: 22px;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+  margin: 30px 0 12px;
+  font-variation-settings: "opsz" 48, "SOFT" 30;
+}
+
+.body-col h4 {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold-deep);
+  margin: 26px 0 10px;
+}
+
+.body-col ul,
+.body-col ol {
+  margin: 0 0 18px;
+  padding-left: 22px;
+}
+
+.body-col li {
+  margin-bottom: 8px;
+  line-height: 1.55;
+}
+
+.body-col li::marker {
+  color: var(--gold-deep);
+}
+
+.body-col strong {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.body-col em {
+  font-style: italic;
+}
+
+.body-col hr {
+  border: none;
+  border-top: 1px solid var(--rule);
+  margin: 44px 0;
+}
+
+.body-col .callout {
+  margin: 28px 0;
+  padding: 20px 24px;
+  background: var(--cream-deep);
+  border-left: 2px solid var(--gold);
+  border-radius: 0 4px 4px 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+.body-col .callout p {
+  margin-bottom: 10px;
+}
+
+.body-col .callout p:last-child {
+  margin-bottom: 0;
+}
+
+/* anchor offset so TOC jumps don't sit flush to the top */
+.body-col h2,
+.body-col h3 {
+  scroll-margin-top: 32px;
+}
+
+/* ============================================================
+   STICKY SECTION TOC (left margin)
+   ============================================================ */
+.margin-rail {
+  position: sticky;
+  top: 32px;
+}
+
+.article-toc {
+  margin-bottom: 32px;
+}
+
+.article-toc .toc-label {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold-deep);
+  margin-bottom: 14px;
+}
+
+.article-toc ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-left: 1px solid var(--rule-soft);
+}
+
+.article-toc .toc-row a {
+  display: block;
+  padding: 4px 0 4px 14px;
+  margin-left: -1px;
+  border-left: 1px solid transparent;
+  font-family: 'Source Serif 4', serif;
+  font-size: 12.5px;
+  line-height: 1.35;
+  color: var(--ink-faded);
+  text-decoration: none;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.article-toc .toc-l3 a {
+  padding-left: 26px;
+  font-size: 11.5px;
+}
+
+.article-toc .toc-row a:hover {
+  color: var(--ink);
+}
+
+.article-toc .toc-row.active a {
+  color: var(--gold-deep);
+  border-left-color: var(--gold);
+}
+
+/* ============================================================
+   PULL QUOTE (breaks the reading column)
+   ============================================================ */
+.pull-quote-block {
+  margin: 40px 0;
+  padding: 8px 0 8px 4px;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  position: relative;
+}
+
+.pull-quote-block {
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-weight: 300;
+  font-size: 27px;
+  line-height: 1.22;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  padding-top: 28px;
+  padding-bottom: 24px;
+  font-variation-settings: "opsz" 60, "SOFT" 80, "WONK" 1;
+}
+
+.pull-quote-mark {
+  position: absolute;
+  top: 2px;
+  left: -4px;
+  font-family: 'Fraunces', serif;
+  font-size: 40px;
+  line-height: 1;
+  color: var(--gold);
+  opacity: 0.6;
+}
+
+.pull-quote-block .attr {
+  display: block;
+  margin-top: 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-style: normal;
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink-faded);
+}
+
+/* ============================================================
+   STAT CLUSTER
+   ============================================================ */
+.stat-cluster {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px 40px;
+  margin: 28px 0;
+  padding: 24px 0;
+  border-top: 1px solid var(--rule-soft);
+  border-bottom: 1px solid var(--rule-soft);
+}
+
+.stat-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-block-value {
+  font-family: 'Fraunces', serif;
+  font-weight: 400;
+  font-size: 30px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  font-feature-settings: "tnum";
+  font-variation-settings: "opsz" 48, "SOFT" 30;
+}
+
+.stat-block-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faded);
+  max-width: 160px;
+  line-height: 1.4;
+}
+
+/* ============================================================
+   CASE FILES (the failure stories)
+   ============================================================ */
+.case-file {
+  margin: 20px 0;
+  padding: 20px 24px;
+  background: var(--cream-deep);
+  border-left: 2px solid var(--loss);
+  border-radius: 0 4px 4px 0;
+}
+
+.case-head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin-bottom: 10px;
+}
+
+.case-n {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--loss);
+}
+
+.case-name {
+  font-family: 'Fraunces', serif;
+  font-size: 19px;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  font-variation-settings: "opsz" 36, "SOFT" 30;
+}
+
+.case-figure {
+  margin-left: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--loss);
+  font-feature-settings: "tnum";
+}
+
+.case-body {
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+.case-body p:last-child {
+  margin-bottom: 0;
+}
+
+/* ============================================================
+   SPRINT TIMELINE
+   ============================================================ */
+.timeline {
+  margin: 28px 0;
+  padding-left: 4px;
+  border-left: 1px solid var(--rule);
+}
+
+.sprint {
+  position: relative;
+  padding: 0 0 28px 28px;
+}
+
+.sprint:last-child {
+  padding-bottom: 0;
+}
+
+.sprint-dot {
+  position: absolute;
+  left: -5px;
+  top: 5px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--gold);
+  border: 2px solid var(--cream);
+}
+
+.sprint-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.sprint-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold-deep);
+}
+
+.sprint-date {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--ink-faded);
+}
+
+.sprint-title {
+  font-family: 'Fraunces', serif;
+  font-size: 18px;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  margin-bottom: 6px;
+  font-variation-settings: "opsz" 36, "SOFT" 30;
+}
+
+.sprint-body {
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+.sprint-body p:last-child {
+  margin-bottom: 0;
+}
+
+/* ============================================================
+   HER-VOICE BLOCKQUOTE
+   ============================================================ */
+.body-col blockquote {
+  margin: 22px 0;
+  padding: 4px 0 4px 22px;
+  border-left: 2px solid var(--gold);
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-weight: 300;
+  font-size: 20px;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  font-variation-settings: "opsz" 36, "SOFT" 60;
+}
+
+.body-col blockquote p {
+  margin: 0;
+}
+
+/* ============================================================
+   LOOP LEDGER (her words → my interpretation)
+   ============================================================ */
+.loop-entry {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  margin: 16px 0;
+  border: 1px solid var(--rule-soft);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.loop-said {
+  padding: 18px 20px;
+  background: var(--cream-deep);
+  border-right: 1px solid var(--rule-soft);
+}
+
+.loop-round {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold-deep);
+  margin-bottom: 8px;
+}
+
+.loop-quote {
+  margin: 0;
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-weight: 300;
+  font-size: 16px;
+  line-height: 1.4;
+  color: var(--ink);
+  font-variation-settings: "opsz" 24, "SOFT" 60;
+}
+
+.loop-read {
+  padding: 18px 20px;
+}
+
+.loop-read-label {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faded);
+  margin-bottom: 8px;
+}
+
+.loop-read p {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+@media (max-width: 640px) {
+  .loop-entry {
+    grid-template-columns: 1fr;
+  }
+  .loop-said {
+    border-right: none;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+}
+
+/* ============================================================
+   MARGIN NOTES (pinned into the right gutter)
+   ============================================================ */
+.side-note {
+  position: absolute;
+  left: calc(100% + 48px);
+  width: 190px;
+  font-family: 'Source Serif 4', serif;
+  font-style: italic;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-faded);
+  border-left: 1px solid var(--gold);
+  padding-left: 12px;
+}
+
+.side-note-label {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-style: normal;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold-deep);
+  margin-bottom: 5px;
+}
+
+/* Below the 3-column width, fold margin notes back into the flow */
+@media (max-width: 1199px) {
+  .side-note {
+    position: static;
+    width: auto;
+    max-width: 480px;
+    margin: 18px 0;
+  }
 }
 
 .body-col code {
@@ -964,6 +1438,15 @@ a {
   .article-body {
     grid-template-columns: 1fr;
     gap: 24px;
+  }
+
+  /* TOC is a desktop affordance; hide on mobile and unstick the rail */
+  .margin-rail {
+    position: static;
+  }
+
+  .article-toc {
+    display: none;
   }
 
   .margin-col, .body-col, .pull-quote {

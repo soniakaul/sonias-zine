@@ -12,7 +12,7 @@ export function getMasthead() {
   return {
     name: "Sonia Kaul",
     location: "San Francisco, CA",
-    volume: { major: 1, minor: 37 },
+    volume: { major: 1, minor: 25 },
     lastRevised: formatDate(new Date()),
     tagline: "A Living Publication",
   };
@@ -30,7 +30,7 @@ export function getCover() {
 export function getWireItems(): string[] {
   // Edit this list anytime — what's the wire showing today?
   return [
-    "Last shipped · AI Conflict Resolver V1",
+    "Last shipped · Tally: household payments tracker",
     "Currently reading · Project Hail Mary, Andy Weir",
     "Open obsession · dates (the fruit)",
     "Now playing · IT'S BEEN AWFUL, Isaiah Rashad",
@@ -50,7 +50,7 @@ export const DEPARTMENTS = {
     number: "02",
     title: "Product",
     description:
-      "Product teardowns, PRDs, and product thinking — the long arc from engineer to product person.",
+      "Product teardowns, PRDs, and product thinking.",
     pageRange: "pp. 24—36",
     href: "/products",
   },
@@ -58,7 +58,7 @@ export const DEPARTMENTS = {
     number: "03",
     title: "Photography",
     description:
-      "Field notes from everywhere I go. Mostly above water, increasingly below.",
+      "Field notes from everywhere I go.",
     pageRange: "pp. 38—54",
     href: "/photography",
   },

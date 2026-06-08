@@ -1,0 +1,187 @@
+---
+number: "02"
+title: "Tally: {Household} Payments"
+blurb: "When your mom is your most critical customer. The brief was a WhatsApp reminder; the product turned out to be infrastructure for her financial life — built across four rounds of feedback, three near-rewrites, and one trust contract."
+tags:
+  - Product
+  - User research
+  - Trust & security
+  - Supabase
+featured: true
+stats:
+  - label: Real user
+    value: "n = 1"
+    valueAccent: "(my mom)"
+  - label: Feedback rounds
+    value: "4"
+---
+
+When I started working with developers, I was sure no one could be a more demanding customer. Brilliant, exacting, allergic to waiting — they know precisely what they want, down to the edge case, and they want it before the sentence is finished. No pleasantries. No patience for your time. The whole relationship collapses into one line: &ldquo;We need this feature, yesterday.&rdquo;
+
+What nobody warned me about is that there&rsquo;s a needier customer than a developer. A mom.
+
+I thought she needed a reminder. She needed a system — something to run her entire payment operation: every due date, every portal, every login, across several countries. The brief was a notification. The product turned out to be infrastructure for her financial life. Four rounds of feedback, three near-rewrites, and one trust contract later, this is the story of how I got from one to the other.
+
+## The brief
+
+My mom manages payments around twenty real estate properties, a company, and the usual stack of household bills across several countries. Her current system is a few notebooks, a notes app with passwords in her own encryption style (some numbers written in Swedish, in case a hacker finds the note), and several payment portals. The bills that get missed don&rsquo;t get missed because she doesn&rsquo;t know what to do about them. They get missed because she didn&rsquo;t see them coming and doesn&rsquo;t have the information she needs at the right time.
+
+One Sunday afternoon, while pouring tea, she said:
+
+> I need something that reminds me on WhatsApp when bills are due.
+
+<Margin label="n = 1, on purpose">Tally is built from a single sentence my mom said, then iterated with her in short rounds. Once it&rsquo;s genuinely useful for one real person, it can widen.</Margin>
+
+That&rsquo;s it. That&rsquo;s the whole spec. If a developer customer says &ldquo;we need this,&rdquo; the next sentence is a deadline. When my mom said this, she pivoted into asking if I&rsquo;d eaten lunch.
+
+My first thought was that this was a weekend project. Recurrence, WhatsApp, a list of due dates. Maybe a dashboard if I was feeling fancy. Ship it Friday. Be a good daughter. Easy. It turned out not to be — almost everything I learned about product over the next two weeks, I learned because I was wrong about that opening sentence.
+
+## What I built first, and why it was wrong
+
+Four days later, I had v1. A clean, perfectly competent bills app. Categories: utilities, insurance, taxes, real estate. Recurrence rules. A dashboard with stat cards. WhatsApp reminders firing at T-3, T-1, T-0, T+1. Reply PAID to mark done. I was proud of it. It looked like a thing.
+
+Then she opened it. The first thing she said was:
+
+> Hmmm, but I want to see monthly details for each country as well. Categories? What are categories? Make that countries, and under each country there are items because it isn&rsquo;t necessarily a property… Sonu, make these changes, na?
+
+What I had built was a one-dimensional taxonomy — the way every SaaS bills app organizes itself. What she actually thinks in is a two-dimensional matrix: every payment lives at the intersection of a **country** (which decides the currency) and an **item** (a property she owns, or a company she handles the bills for). She doesn&rsquo;t have categories. She has a grid.
+
+<Loop
+  round="Round 1, revisited · May 31"
+  quote="countries + items → categories for properties or companies"
+  read="She doesn't have categories — she has a 2D matrix. Every payment lives at the intersection of a country (which decides the currency) and an item (a property or a company). The categories I built were somebody else's product, ported into her file."
+/>
+
+Once I saw it, the implications were ugly. Per-country views had to stay in *local* currency — USD totals in USD, INR totals in INR — because the moment I converted her US assets to INR, I was hiding the truth she was trying to see. Filters by country and item had to be a primary surface, not metadata buried as tags. The whole schema had to be rebuilt.
+
+<PullQuote attr="Round 1">I had built someone else&rsquo;s mental model and slapped her name on it.</PullQuote>
+
+The lesson I keep coming back to: the categories abstraction wasn&rsquo;t wrong because of a UX flaw or a missing feature. It was wrong because it was *somebody else&rsquo;s product*. The job of round one was to find that out.
+
+## The bigger thing she actually needed
+
+A few days later, in the middle of a list of small things, she said this — casually:
+
+> Oh and Sonu — I always forget which portal I need to use for each payment, and the logins for that portal. So: each payment needs a payment portal. Login details for that. Bank name. Login details for the bank. And maybe a notes field for important info that should surface when I&rsquo;m making the payment.
+
+If I&rsquo;m being honest, my first instinct was to add a `portal_name` text field, a `bank_name` text field, and a `notes` textarea, and move on. That is the entire feature request, technically. It would have taken forty minutes. I almost did it. Catching myself in that specific micro-moment is probably the single most important product decision I made on this project.
+
+My mom manages twenty properties — roughly twenty portal logins, twenty bank relationships, twenty sets of fiddly details she digs up every time a payment is due. The reminders only solve half her problem. The other half — the bigger half — is that when the reminder fires, she still has to figure out where to go and how to log in.
+
+The real product isn&rsquo;t reminders. It&rsquo;s **reducing the gap between &ldquo;I remembered the payment was due&rdquo; and &ldquo;the payment has been made.&rdquo;** Reminders shrink the gap by one step. Credentials shrink it by another. Notes catch the irregular pieces. Each one is a separate halving of friction.
+
+And then — this is the part I love — she gave me the security model. In plain English, without a single technical word:
+
+> Portal and bank can show in the WhatsApp reminder, but login details should only show on the webpage when I&rsquo;m logged in — who knows who is reading what in WhatsApp?
+
+Read that again. That is a complete access-control specification: surface non-sensitive context (portal, bank, notes) in the reminder; surface secrets (usernames, passwords) only inside an authenticated session. She didn&rsquo;t know the words, but she had the model.
+
+<PullQuote>The needy customer is the one who isn&rsquo;t translating for me. Doing the translation is the job.</PullQuote>
+
+## How do we keep this encrypted?
+
+&ldquo;How do we keep this data hidden?&rdquo; was her literal next question. Not &ldquo;is it encrypted.&rdquo; Not &ldquo;is it safe.&rdquo; *How.* She wanted the mechanism. There were three real options.
+
+**Option A — server-side encryption via an edge function.** Store ciphertext in Postgres. A small server-side function holds the AES-256 key in Supabase&rsquo;s secrets store. Postgres itself never sees the plaintext.
+
+**Option B — column-level encryption with Postgres-managed keys.** The database&rsquo;s own encryption tooling, key held in a managed vault. Less code, more lock-in; Postgres sees plaintext briefly inside the encrypt/decrypt functions.
+
+**Option C — end-to-end encryption from the client.** Mom sets a passphrase. The key is derived from it, lives only in her browser, never touches my servers. The strongest privacy story by a mile.
+
+<Margin label="The real question">Not &ldquo;which is most secure,&rdquo; but: encrypted against what threat, at what UX cost, with what failure mode?</Margin>
+
+The question I had to answer wasn&rsquo;t &ldquo;which one is most secure.&rdquo; It was three questions hiding inside one. Encrypted *against what?* — a database leak, a platform compromise, a phished session. At what *UX cost?* — does mom have to remember a passphrase, re-enter it on every device? With what *failure mode?* — if she forgets her password, what does she lose?
+
+Option C wins on privacy and loses badly on the third question. If my mom forgets her passphrase, every credential she ever stored is permanently undecryptable. There is no recovery. Her actual failure mode is &ldquo;forgot the second password I made up six months ago and used twice.&rdquo; If I shipped C, I&rsquo;d be building a product that eventually deletes her data and tells her it&rsquo;s her fault.
+
+Option A is the right level of paranoia for a household of one. The database-leak case is covered. The passphrase-failure case doesn&rsquo;t exist because there&rsquo;s no passphrase. The trade-off I am accepting *out loud*: Supabase still holds the key, so a full end-to-end platform compromise would expose her credentials. That is an honest line, and the right one for now. If I widen past her household, the next step is C with a recovery-key mechanism. Future problem. Logged.
+
+<PullQuote attr="Security as a product decision">The answer to &ldquo;is it secure&rdquo; is never yes or no. It&rsquo;s which compromise you&rsquo;re choosing, and whether it&rsquo;s right for this specific person.</PullQuote>
+
+The only way to know what&rsquo;s right for this specific person is to know this specific person. That is the difference between security as a feature and security as a product decision.
+
+## The loop, not the app
+
+If you take one thing from this, it should be this: the artifact I&rsquo;m proudest of isn&rsquo;t Tally. It is the loop. Mom says something. I write down what she said *and separately* what I think it means. I ship the change. She uses it. She says something.
+
+<Margin label="The loop">Her words in one column, my interpretation in another. The second column is the whole trick — it catches every time I jump to a solution she didn&rsquo;t ask for.</Margin>
+
+It&rsquo;s that simple. The trick — the entire trick — is the second column. Writing my interpretation next to her literal words is what catches every time I&rsquo;m jumping to a solution she didn&rsquo;t ask for. The first time I did this, I caught myself five times in one transcript. Here&rsquo;s what the log actually looks like:
+
+<Loop
+  round="Round 2 · Jun 1"
+  quote="the inflow / outflow words don't feel right"
+  read="'Inflow / outflow' is finance jargon. She thinks 'money coming in' vs 'money going out.' Renamed to incoming / outgoing everywhere. Use her words, not mine."
+/>
+
+<Loop
+  round="Round 2 · Jun 1"
+  quote="when I pick a country, the currency should fill in. always."
+  read="She expects hard coupling: country = currency. I'd added a guard that suppressed auto-fill after any keystroke — protecting a rare override at the cost of the common path. The common path can't pay for the edge case."
+/>
+
+The rounds, dated, so the log can&rsquo;t pretend the direction didn&rsquo;t shift:
+
+<Timeline>
+
+<Sprint label="v1 — the brief" date="May 24" title="One sentence">
+&ldquo;I need something that reminds me on WhatsApp when bills are due.&rdquo; Built: WhatsApp reminders (T-3/T-1/T-0/T+1), recurrence, multi-currency, a setup portal.
+</Sprint>
+
+<Sprint label="Round 1" date="May 27" title="It's not a bills app">
+Properties, not categories. Incoming *and* outgoing — she&rsquo;s a household landlord, not just a bill-payer. A payment is a task with a destination: portal, login, bank.
+</Sprint>
+
+<Sprint label="Round 1, revisited" date="May 31" title="The country × item matrix">
+Not properties — a 2D grid of country × item. Per-country views in *local* currency. Filters as a primary surface. Backup/recovery promoted to a v1 requirement.
+</Sprint>
+
+<Sprint label="Round 2" date="Jun 1" title="Real data, real credentials">
+A naming pass into her words. Per-payment encrypted credentials (portal + bank + notes). Scoped recurring deletes, soft-delete trash, inline-create to kill dead-ends.
+</Sprint>
+
+</Timeline>
+
+Three things the loop has taught me about how to read my mom. **She answers in the order things matter to her, but ranking is not importance** — the most load-bearing sentence she ever said (&ldquo;once my mom is reliant on it, it cannot go&rdquo;) came last, as an afterthought, about backups. **She uses one word to mean several things** — &ldquo;categories&rdquo; meant two different structures four hours apart. **She pushes back on disabled buttons within seconds** — she reads a greyed-out button as *broken*, not as &ldquo;do the prerequisite first,&rdquo; so every disabled action in Tally now has an inline path to the unblock.
+
+<PullQuote>The app is what falls out of the loop running cleanly.</PullQuote>
+
+Every time I&rsquo;m tempted to add a feature, the question I make myself answer is: which round of feedback is this answering? If I can&rsquo;t name the round, it shouldn&rsquo;t ship.
+
+## About AI
+
+Yes, I used AI to write most of the code. Yes, it sped me up. No, it is not what made the product good. Two moments where AI tried to make my decision for me — and I had to push back — are exactly what separates &ldquo;I used AI to build something&rdquo; from &ldquo;I shipped something good.&rdquo;
+
+**Moment one: the encryption question.** When I asked the AI how to store credentials securely, its first instinct was to pick Option A and start writing code. I had to stop it: lay out three options, show the trade-offs, force me to choose. That decision — Supabase still holds the key, am I okay with that — is *mine*. The AI is happy to absolve me of choosing. The job is not to let it.
+
+**Moment two: &ldquo;Add payment is greyed out.&rdquo;** The AI shipped a feature where the prerequisite (add a country first) gated the Add-payment button — so the user couldn&rsquo;t reach the unblock from the screen she was stuck on. The AI didn&rsquo;t notice. I noticed, because my mom told me. The AI doesn&rsquo;t know she reads a disabled button as broken. Only watching her does.
+
+<PullQuote>The work hasn&rsquo;t gotten cheaper. It has gotten faster. Those are not the same thing.</PullQuote>
+
+What the AI does well: schema migrations, edge-function scaffolding, the boring 80%. What it cannot do is sit next to my mom and notice she frowned for half a second when she clicked something. The AI is the perfect *developer* customer — it says yes, it moves fast, it ships. My mom is the one who keeps me honest.
+
+## What I haven&rsquo;t built yet
+
+I want to be honest about the gaps in v1, because pretending they don&rsquo;t exist would defeat the point.
+
+**Per-portal credential reuse.** Credentials are per-payment right now; she&rsquo;ll re-type the same ICICI login across ten rows. The model wants a `portals` lookup with credentials stored once. Noticed. Deferred. I&rsquo;ll build it when she hits the pain.
+
+**Nightly off-platform backup.** She said this was the most important thing she said all day, and it&rsquo;s the layer I have most under-built. Right now it&rsquo;s Supabase&rsquo;s managed backups and nothing else. The plan: a nightly JSON export to her own Gmail, so if Supabase ever evaporates, her data still exists somewhere she controls. Not done. I&rsquo;m saying it out loud because the alternative is pretending it is.
+
+**A co-admin role.** If she loses access to her account, she loses everything. There should be a second login (me) with full recovery rights. There isn&rsquo;t yet.
+
+A v1 that ships with an honest v2 list is more trustworthy than a v1 that pretends everything is covered.
+
+## One paragraph that holds all of this
+
+A household payment reminder app is too small a frame for what I built. The real product is a **trust contract** with my mom that says: if you put your life into this, you won&rsquo;t lose it. Reminders are one half of the contract. Credentials are the other half. Notes are the connective tissue. Backup is the load-bearing column I&rsquo;m still pouring. Every architecture decision has to answer to that test.
+
+<PullQuote>Would you trust this with the thing you cannot afford to re-create? That isn&rsquo;t a software question. It&rsquo;s a product question.</PullQuote>
+
+## What&rsquo;s next
+
+I&rsquo;m not widening past mom until the loop has run a few more times with her on real data. When she trusts it, we&rsquo;ll talk about whether the next user is her sister, her friend, or a stranger.
+
+If you want the messy version — the round-by-round log of what she said, what I thought it meant, and where I was wrong — it lives in the [user-research log](https://github.com/soniakaul/tally/blob/main/docs/user-research.md) in the repo. The case study you just read is the polished version of that log. The thing I&rsquo;d do differently next time, already running this loop on myself: ask the trust question *first*, not last.
+
+— Sonia

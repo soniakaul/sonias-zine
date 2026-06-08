@@ -2,6 +2,9 @@ import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import { getEntry, getProducts } from "@/lib/content";
 import TitleText from "@/components/TitleText";
+import ArticleTOC from "@/components/ArticleTOC";
+import { mdxComponents } from "@/components/mdx";
+import { extractToc } from "@/lib/toc";
 import { DEPARTMENTS } from "@/lib/site";
 
 export async function generateStaticParams() {
@@ -31,6 +34,7 @@ export default async function ProductFeaturePage({
   const entry = getEntry("products", slug);
   if (!entry) notFound();
   const dept = DEPARTMENTS.products;
+  const toc = extractToc(entry.body);
 
   return (
     <section className="spread">
@@ -54,16 +58,19 @@ export default async function ProductFeaturePage({
 
       <div className="article-body">
         <aside className="margin-col">
-          {entry.tags.length > 0 && (
-            <div className="margin-note">
-              <span className="label">Tags</span>
-              {entry.tags.join(" · ")}
-            </div>
-          )}
+          <div className="margin-rail">
+            <ArticleTOC items={toc} />
+            {entry.tags.length > 0 && (
+              <div className="margin-note">
+                <span className="label">Tags</span>
+                {entry.tags.join(" · ")}
+              </div>
+            )}
+          </div>
         </aside>
 
         <div className="body-col">
-          <MDXRemote source={entry.body} />
+          <MDXRemote source={entry.body} components={mdxComponents} />
         </div>
       </div>
 

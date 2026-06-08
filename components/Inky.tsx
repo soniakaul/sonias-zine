@@ -1,7 +1,34 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import styles from "@/styles/inky.module.css";
+
+// Turn any URLs Inky writes into clickable links (trailing punctuation stripped).
+function renderAnswer(text: string): React.ReactNode {
+  return text.split(/(https?:\/\/[^\s]+)/g).map((part, i) => {
+    if (i % 2 === 0) return part;
+    let url = part;
+    let trail = "";
+    const m = url.match(/[.,;:!?)\]]+$/);
+    if (m) {
+      trail = m[0];
+      url = url.slice(0, url.length - trail.length);
+    }
+    return (
+      <React.Fragment key={i}>
+        <a
+          href={url}
+          target="_blank"
+          rel="noreferrer"
+          className={styles.answerLink}
+        >
+          {url}
+        </a>
+        {trail}
+      </React.Fragment>
+    );
+  });
+}
 
 // ============================================================
 // INKY — the site's tiny ink-blob mascot.
@@ -52,11 +79,15 @@ export default function Inky() {
   });
   const recentBehaviorRef = useRef<string | null>(null);
   const currentTaskRef = useRef<{ cancel: () => void } | null>(null);
-  const lifecycleStartedRef = useRef(false);
 
   const [overlayOpen, setOverlayOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
+  const [answer, setAnswer] = useState("");
+  const [asking, setAsking] = useState(false);
+  const abortRef = useRef<AbortController | null>(null);
+  const [showHint, setShowHint] = useState(false);
+  const interactedRef = useRef(false);
 
   // ===== Helpers =====
   function stageWidth() {
@@ -110,7 +141,6 @@ export default function Inky() {
   function walk({
     minDuration = 2000,
     maxDuration = 12000,
-    untilEdge = true,
   } = {}): Promise<"off-screen" | "time-up" | "cancelled"> {
     return new Promise((resolve) => {
       const inky = inkyRef.current;
@@ -157,15 +187,17 @@ export default function Inky() {
 
         const dt = 1 / 60;
         state.x += currentSpeed * state.direction * dt;
-        render();
 
-        if (untilEdge && (state.x < -80 || state.x > stageWidth() + 20)) {
-          state.onScreen = false;
-          inky?.classList.remove(styles.walking);
-          recentBehaviorRef.current = "walk";
-          resolve("off-screen");
-          return;
+        // Always-on: bounce off the visible edges instead of walking off.
+        const maxX = Math.max(40, stageWidth() - 56);
+        if (state.x < 0) {
+          state.x = 0;
+          state.direction = 1;
+        } else if (state.x > maxX) {
+          state.x = maxX;
+          state.direction = -1;
         }
+        render();
 
         if (performance.now() - startTime > duration) {
           inky?.classList.remove(styles.walking);
@@ -251,20 +283,6 @@ export default function Inky() {
     });
   }
 
-  function enter() {
-    const state = stateRef.current;
-    // Bias toward forward entrance — backward should feel like the variant
-    if (Math.random() < 0.8) {
-      state.x = -80;
-      state.direction = 1;
-    } else {
-      state.x = stageWidth() + 20;
-      state.direction = -1;
-    }
-    state.onScreen = true;
-    render();
-  }
-
   function fallFromSky(): Promise<void> {
     return new Promise((resolve) => {
       const inky = inkyRef.current;
@@ -320,48 +338,29 @@ export default function Inky() {
   // ===== Lifecycle loop =====
 
   useEffect(() => {
-    if (lifecycleStartedRef.current) return;
-    lifecycleStartedRef.current = true;
-
     let stopped = false;
 
     async function lifecycle() {
+      // Inky is always on screen — walk him in to start, then never leave.
+      const state = stateRef.current;
+      state.x = stageWidth() * 0.4;
+      state.direction = 1;
+      state.onScreen = true;
+      render();
+
       while (!stopped) {
-        const state = stateRef.current;
-
-        // Off-screen: wait, then enter
-        if (!state.onScreen) {
-          const offDuration = 5000 + Math.random() * 10000; // 5–15s
-          state.behavior = "off-screen";
-          await sleep(offDuration);
-          if (stopped) return;
-
-          // 1/100 chance of falling from the sky
-          if (Math.random() < 0.01) {
-            await fallFromSky();
-          } else {
-            enter();
-          }
-          if (stopped) return;
-        }
-
-        // On-screen: pick a behavior
-        // Mix: 75% walk · 15% sit-stare · 10% turn-around
+        // Pick a behavior, all performed in place — he never exits.
+        // Mix: 68% walk · 16% sit-stare · 13% turn · 3% surprise sky-fall
         const r = Math.random();
-        if (r < 0.75) {
-          const stayOn = Math.random() < 0.5;
-          const result = await walk({
-            minDuration: stayOn ? 2000 : 8000,
-            maxDuration: stayOn ? 5000 : 20000,
-            untilEdge: !stayOn,
-          });
-          if (stopped) return;
-          if (result === "off-screen") continue;
-        } else if (r < 0.9) {
+        if (r < 0.68) {
+          await walk({ minDuration: 2500, maxDuration: 9000 });
+        } else if (r < 0.84) {
           const stareDuration = 3000 + Math.random() * 5000;
           await sitStare({ duration: stareDuration });
-        } else {
+        } else if (r < 0.97) {
           await turn();
+        } else {
+          await fallFromSky();
         }
         if (stopped) return;
 
@@ -412,7 +411,10 @@ export default function Inky() {
   // ===== Escape closes overlay =====
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") setOverlayOpen(false);
+      if (e.key === "Escape") {
+        abortRef.current?.abort();
+        setOverlayOpen(false);
+      }
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -424,11 +426,87 @@ export default function Inky() {
     }
   }, [overlayOpen]);
 
+  // ===== "Press my belly" attention hint =====
+  // Nudge a few times after load so visitors know Inky is interactive,
+  // then leave him be — and stop entirely once they've poked him.
+  useEffect(() => {
+    let cancelled = false;
+    const timers: ReturnType<typeof setTimeout>[] = [];
+
+    function nudge(delay: number, duration = 4000) {
+      timers.push(
+        setTimeout(() => {
+          if (cancelled || interactedRef.current) return;
+          setShowHint(true);
+          timers.push(
+            setTimeout(() => {
+              if (!cancelled) setShowHint(false);
+            }, duration)
+          );
+        }, delay)
+      );
+    }
+
+    nudge(2500); // first nudge shortly after load
+    nudge(18000); // again a bit later
+    nudge(45000); // one last gentle reminder
+
+    return () => {
+      cancelled = true;
+      timers.forEach(clearTimeout);
+    };
+  }, []);
+
+  async function runQuery(raw: string) {
+    const q = raw.trim();
+    if (!q || asking) return;
+    setQuery(q);
+
+    setAsking(true);
+    setAnswer("");
+    abortRef.current?.abort();
+    const ctrl = new AbortController();
+    abortRef.current = ctrl;
+
+    try {
+      const res = await fetch("/api/inky", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: q }),
+        signal: ctrl.signal,
+      });
+
+      if (!res.body) {
+        setAnswer(await res.text());
+        return;
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let acc = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        acc += decoder.decode(value, { stream: true });
+        setAnswer(acc);
+      }
+    } catch (err) {
+      if ((err as { name?: string }).name !== "AbortError") {
+        setAnswer("I couldn't reach my brain just now — give me another try?");
+      }
+    } finally {
+      setAsking(false);
+    }
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    // Sprint 3 wires this to a real backend
-    console.log("Editor query:", query);
-    alert("Inky's still learning to fetch answers. The full feature ships with v2.");
+    runQuery(query);
+  }
+
+  function closeOverlay() {
+    abortRef.current?.abort();
+    setOverlayOpen(false);
   }
 
   return (
@@ -436,9 +514,15 @@ export default function Inky() {
       <div className={styles.inkyStage}>
         <button
           ref={inkyRef}
-          className={`${styles.inky} ${styles.idle}`}
-          onClick={() => setOverlayOpen(true)}
-          aria-label="Ask the editor"
+          className={`${styles.inky} ${styles.idle} ${
+            showHint ? styles.hinting : ""
+          }`}
+          onClick={() => {
+            interactedRef.current = true;
+            setShowHint(false);
+            setOverlayOpen(true);
+          }}
+          aria-label="Ask Inky a question"
         >
           <span className={styles.tooltip}>Press my belly ✦</span>
           <div className={styles.breathing}>
@@ -526,7 +610,7 @@ export default function Inky() {
       <div
         className={`${styles.overlay} ${overlayOpen ? styles.active : ""}`}
         onClick={(e) => {
-          if (e.target === e.currentTarget) setOverlayOpen(false);
+          if (e.target === e.currentTarget) closeOverlay();
         }}
       >
         <div className={styles.overlayCard}>
@@ -553,7 +637,7 @@ export default function Inky() {
               <circle cx="28" cy="46" r="5" fill="#b8893a" opacity="0.95" />
             </svg>
           </div>
-          <div className={styles.overlayEyebrow}>✦ Inky will fetch it</div>
+          <div className={styles.overlayEyebrow}>✦ Ask Inky — Sonia&rsquo;s ink-blob</div>
           <h2 className={styles.overlayHeading}>
             What would
             <br />
@@ -569,8 +653,37 @@ export default function Inky() {
               placeholder="e.g. what does Sonia think about AI tooling for engineers?"
             />
           </form>
-          <div className={styles.overlayHint}>Press enter to ask</div>
-          <button className={styles.overlayClose} onClick={() => setOverlayOpen(false)}>
+
+          {!answer && !asking && (
+            <div className={styles.overlayChips}>
+              {[
+                "What has Sonia built?",
+                "Why should we hire her?",
+                "What are her hobbies?",
+              ].map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  className={styles.overlayChip}
+                  onClick={() => runQuery(s)}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {(answer || asking) && (
+            <div className={styles.overlayAnswer}>
+              {renderAnswer(answer)}
+              {asking && <span className={styles.cursor} aria-hidden="true" />}
+            </div>
+          )}
+
+          <div className={styles.overlayHint}>
+            {asking ? "Inky is thinking…" : "Press enter to ask"}
+          </div>
+          <button className={styles.overlayClose} onClick={closeOverlay}>
             Close · Esc
           </button>
         </div>
