@@ -26,7 +26,7 @@ gold divider line above the wire ticker. His clickable belly opens the
 that lets readers query across the whole publication in natural language.
 He has a small state machine: walks across the screen at randomized
 speeds, sometimes sits and stares (squashing only the body, not his
-features), sometimes turns around, occasionally falls from the sky.
+features), and sometimes turns around.
 
 ## Stack
 
