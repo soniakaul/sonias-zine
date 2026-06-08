@@ -3,20 +3,36 @@
 import React, { useEffect, useRef, useState } from "react";
 import styles from "@/styles/inky.module.css";
 
-// Turn any URLs Inky writes into clickable links (trailing punctuation stripped).
+// Render Inky's answer: **bold**, *italic* / _italic_, and clickable links.
+// Lightweight on purpose — his replies are short prose, not full Markdown.
 function renderAnswer(text: string): React.ReactNode {
-  return text.split(/(https?:\/\/[^\s]+)/g).map((part, i) => {
-    if (i % 2 === 0) return part;
-    let url = part;
-    let trail = "";
-    const m = url.match(/[.,;:!?)\]]+$/);
-    if (m) {
-      trail = m[0];
-      url = url.slice(0, url.length - trail.length);
-    }
-    return (
-      <React.Fragment key={i}>
+  const nodes: React.ReactNode[] = [];
+  const re = /(\*\*[^*]+\*\*|\*[^*\n]+\*|_[^_\n]+_|https?:\/\/[^\s]+)/g;
+  let last = 0;
+  let key = 0;
+  let m: RegExpExecArray | null;
+
+  while ((m = re.exec(text)) !== null) {
+    if (m.index > last) nodes.push(text.slice(last, m.index));
+    const tok = m[0];
+
+    if (tok.startsWith("**")) {
+      nodes.push(<strong key={key++}>{tok.slice(2, -2)}</strong>);
+    } else if (tok.startsWith("*")) {
+      nodes.push(<em key={key++}>{tok.slice(1, -1)}</em>);
+    } else if (tok.startsWith("_")) {
+      nodes.push(<em key={key++}>{tok.slice(1, -1)}</em>);
+    } else {
+      let url = tok;
+      let trail = "";
+      const t = url.match(/[.,;:!?)\]]+$/);
+      if (t) {
+        trail = t[0];
+        url = url.slice(0, url.length - trail.length);
+      }
+      nodes.push(
         <a
+          key={key++}
           href={url}
           target="_blank"
           rel="noreferrer"
@@ -24,10 +40,13 @@ function renderAnswer(text: string): React.ReactNode {
         >
           {url}
         </a>
-        {trail}
-      </React.Fragment>
-    );
-  });
+      );
+      if (trail) nodes.push(trail);
+    }
+    last = re.lastIndex;
+  }
+  if (last < text.length) nodes.push(text.slice(last));
+  return nodes;
 }
 
 // ============================================================
@@ -639,9 +658,7 @@ export default function Inky() {
           </div>
           <div className={styles.overlayEyebrow}>✦ Ask Inky — Sonia&rsquo;s ink-blob</div>
           <h2 className={styles.overlayHeading}>
-            What would
-            <br />
-            you like to know?
+            What would you like to know?
           </h2>
           <form onSubmit={handleSubmit}>
             <input
