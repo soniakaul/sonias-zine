@@ -32,3 +32,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Inky build log holds raw, private research — never commit
+docs/inky-build-log.md

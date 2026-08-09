@@ -6,12 +6,14 @@ import { getMasthead } from "@/lib/site";
 // ============================================================
 // INKY — system-prompt assembly.
 //
-// Inky doesn't carry the FULL text of every write-up (the Stock Gut-Check
-// PRD alone is ~14k tokens). Instead each piece becomes a compact CARD:
-// title, tags, a brief + short excerpt, and canonical LINKS to the full
-// piece. Inky is instructed to cite those links as evidence — so answers
-// stay grounded and point people to the real artifact, while each request
-// stays small, fast, and cheap.
+// Inky's brain is everything WITHIN this website — nothing external:
+//   1. content/inky/persona.md          → voice contract (loaded first)
+//   2. every other *.md in content/inky/ → curated facts (about-sonia, etc.)
+//   3. the site's own project + product write-ups → briefs + links to cite
+//
+// (1) and (2) are the hand-curated layer Sonia controls directly; (3) is the
+// public site content, surfaced as short briefs + canonical links (not full
+// bodies) so answers stay grounded, cheap, and cite the real artifacts.
 //
 // Built once at module load → identical bytes per request → caches well.
 // ============================================================
@@ -31,8 +33,8 @@ function cleanTitle(t: string): string {
 // Strip MDX/JSX tags + markdown punctuation to a plain-text excerpt.
 function excerpt(body: string, max = 700): string {
   const clean = body
-    .replace(/<[^>]+>/g, " ") // JSX components (CaseFile, PullQuote, …)
-    .replace(/[#>*_`]/g, "") // markdown punctuation
+    .replace(/<[^>]+>/g, " ")
+    .replace(/[#>*_`]/g, "")
     .replace(/\s+/g, " ")
     .trim();
   if (clean.length <= max) return clean;
@@ -40,12 +42,8 @@ function excerpt(body: string, max = 700): string {
 }
 
 function card(e: Entry, kind: "project" | "product"): string {
-  // Where the full piece lives. Products have an on-site article page;
-  // projects link out to the deployed app / source (no on-site detail page).
   const links: string[] = [];
-  if (kind === "product") {
-    links.push(`Full write-up: ${SITE_URL}/products/${e.slug}`);
-  }
+  if (kind === "product") links.push(`Full write-up: ${SITE_URL}/products/${e.slug}`);
   if (e.liveUrl) links.push(`Live: ${e.liveUrl}`);
   if (e.sourceUrl) links.push(`Source: ${e.sourceUrl}`);
 
@@ -64,38 +62,47 @@ function card(e: Entry, kind: "project" | "product"): string {
 
 export function buildSystemPrompt(): string {
   const persona = readDoc("persona.md");
-  const facts = readDoc("about-sonia.md");
-  const { name, location } = getMasthead();
+
+  // Every other curated doc in content/inky/, deterministic order.
+  const curated = (
+    fs.existsSync(INKY_DIR)
+      ? fs
+          .readdirSync(INKY_DIR)
+          .filter((f) => f.endsWith(".md") && f !== "persona.md")
+          .sort()
+      : []
+  )
+    .map((f) => fs.readFileSync(path.join(INKY_DIR, f), "utf-8").trim())
+    .filter(Boolean)
+    .join("\n\n---\n\n");
 
   const cards = [
     ...getProjects().map((e) => card(e, "project")),
     ...getProducts().map((e) => card(e, "product")),
   ].join("\n\n---\n\n");
 
+  const { name, location } = getMasthead();
+
   return `${persona}
 
-# WHAT YOU KNOW ABOUT SONIA
+# WHAT INKY KNOWS ABOUT SONIA (curated facts)
 
-${facts}
+This is the knowledge Sonia has chosen to share. Ground answers in it; if
+something isn't here or in her work below, say so warmly rather than guessing.
 
-# SONIA'S WORK — briefs + links to the full pieces
+${curated}
 
-Each entry below is a SHORT brief plus links to the full write-up. These are the
-authoritative record of what she's built. When you talk about any of them,
-**cite the link** so the person can read the real thing — every claim should be
-backed by the relevant artifact. Only use links that appear here; never invent a
-URL. Prefer the on-site "Full write-up" link for products; include the live demo
-when it's relevant.
+# SONIA'S WORK — briefs + links from the site
+
+Short briefs of what she's built, each with a link to the full piece. When you
+mention one, cite its link so people can read the real thing. Only use links that
+appear here — never invent one.
 
 ${cards}
 
 # SITE FACTS
 
-- Publication: "${name}'s" — a hand-built editorial magazine (this website, ${SITE_URL}).
+- Publication: "${name}'s" — a hand-built editorial magazine (this site, ${SITE_URL}).
 - ${name} is based in ${location}.
-- You, Inky, live on the gold line at the bottom of the site.
-
-Remember: answer as Sonia, in her voice, grounded in everything above, and link
-to the evidence as you go. If you genuinely don't know, say so warmly — never
-invent facts or links.`;
+- You, Inky, live on the gold line at the bottom of the site.`;
 }
