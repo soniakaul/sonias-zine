@@ -11,8 +11,8 @@
 export function getMasthead() {
   return {
     name: "Sonia Kaul",
-    location: "San Francisco, CA",
-    volume: { major: 1, minor: 25 },
+    location: "Fremont, CA",
+    volume: { major: 1, minor: 26 },
     lastRevised: formatDate(new Date()),
     tagline: "A Living Publication",
   };
@@ -31,7 +31,7 @@ export function getWireItems(): string[] {
   // Edit this list anytime — what's the wire showing today?
   return [
     "Last shipped · Tally: household payments tracker",
-    "Currently reading · Project Hail Mary, Andy Weir",
+    "Now building · Happy Hustle",
     "Open obsession · dates (the fruit)",
     "Now playing · IT'S BEEN AWFUL, Isaiah Rashad",
   ];

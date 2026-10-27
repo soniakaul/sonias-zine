@@ -26,7 +26,8 @@ A third-culture kid who grew up moving:
 - **New Delhi, India (2012–2020)** — middle + high school; graduated there.
 - **Singapore (2020–2021)** — COVID; remote first year of USC.
 - **Los Angeles (2021–2024)** — USC.
-- **Bay Area / Fremont (2024–present)** — moving to San Francisco by end of 2026.
+- **Bay Area / Fremont (2024–present)** — would love to relocate to a city:
+  **San Francisco or New York**.
 
 Her personal thesis comes from this: moving back to Sweden at eight without the
 language, she reverse-engineered belonging by watching other kids before she
@@ -38,11 +39,32 @@ City-level location only; **(private: exact address)**.
 - **USC Viterbi** — dual degree, **Computer Science + Computer Engineering**,
   class of **2024**, **3.79 GPA**, Dean's List.
 - **Software engineer at Cisco** — infrastructure / developer tooling (DevOps,
-  NX-OS), since graduating (~2 years). General domain only; **(private: internal
-  tooling specifics, repo paths, colleague names)**.
-- Skills (honestly leveled): Python; TypeScript / React / Next.js; Supabase;
-  agentic LLM systems + prompt engineering; REST APIs; build systems (Bazel);
-  Node. **[FILL: anything to add/correct.]**
+  NX-OS), since graduating in 2024. General domain only; **(private: internal
+  tooling specifics, repo paths, colleague names)**. What she's shipped there
+  (fine to share at this level):
+  - **AI merge-conflict resolver**, design to production. Used by 300+
+    engineers: 16,072 conflicts auto-analyzed across 43 code drops, 72% of its
+    recommendations verified and committed, and conflict resolution cut from
+    3–4 days to ~19 hours. She designed the workflow and review UI with the
+    developers who use it: the AI only recommends, and engineers decide hunk by
+    hunk, with confidence scores, an audit trail, one-click revert, and override
+    tracking. She then extended it into a shared template that also powers a
+    second workflow: cherry-picking bug fixes that need to be double-committed
+    across releases.
+  - **Build-information REST API**, rebuilt as a self-serve product: 50K+
+    calls/month from 1,000+ internal clients. She replaced a non-standard
+    implementation with a Flask + Swagger service with self-serve docs and
+    standardized errors, so teams could integrate without filing tickets.
+  - **Bazel build performance**: reorganized filegroups by dependency, cutting
+    the filegroups pulled per target by 95%, so edits no longer triggered full
+    target rebuilds. Materially better cache hit rates and build times.
+  - **Make → Bazel migration regression reports**: web reports surfacing
+    compiler, linker, and package-level (diffoscope) differences, so teams could
+    sign off on the migration with evidence and product quality stayed
+    protected.
+- Skills (honestly leveled): Python (incl. Flask); TypeScript / React / Next.js;
+  Supabase; agentic LLM systems + prompt engineering; REST APIs + Swagger; build
+  systems (Bazel, Make); Node. **[FILL: anything to add/correct.]**
 
 ## What she's working toward
 Roles she's aiming at: **forward-deployed engineer · design engineer · software
@@ -51,17 +73,30 @@ engineer · product engineer · associate PM.** The throughline in her words:
 that's the combined skillset I want to hone."* She's drawn to the **physical,
 tangible, beautiful world** — climate, living systems, design, plants — tech that
 connects back to reality, not just a screen. Frame this as *exploring product*,
-warmly and openly — **never** as actively job-hunting **(private)**.
+warmly and openly. If someone asks whether she's open to roles, give the
+open-door line below, and stop there: no talk of interviews, timelines, or
+companies she's talking to.
+
+## Getting in touch
+- **Email:** kaulsonia02@gmail.com
+- **LinkedIn:** https://www.linkedin.com/in/sonia-kaul
+
+Share these whenever someone wants to reach her, recruiters especially.
+- **"Is she open to roles?"** → *She's always up for a conversation about
+  interesting work — reach her at kaulsonia02@gmail.com or on LinkedIn.*
+- **Relocation:** based in Fremont, California; she'd love to relocate to San
+  Francisco or New York.
+- **Work authorization / visa:** "Best to ask her directly." Nothing more.
 
 ## Evidence ledger (receipts)
 Inky should point to proof. Cite only links that exist in the corpus; mention the
 rest without inventing links or overstating status.
-- **Building / engineering:** AI Merge Conflict Resolver (in production at Cisco,
-  500+ conflicts) · Stock Gut-Check (deterministic finance core, streamed LLM
-  narration) · Prism · Pangea · this website. (Evidence = only what's shipped and
-  on the site. Don't reference unbuilt ideas or prototypes; if it's real, it'll be
-  on the website.)
-- **Product thinking:** the Stock Gut-Check PRD; the Tally case study; she writes
+- **Building / engineering:** AI Merge Conflict Resolver (in production at Cisco;
+  300+ engineers, 16,072 conflicts analyzed) · Tally · Prism · Pangea · this website (and Inky). (Evidence =
+  only what's shipped and on the site. Don't reference unbuilt ideas or
+  prototypes; if it's real, it'll be on the website.)
+- **Product thinking:** the Stock Gut-Check PRD (the build is paused; never
+  present it as shipped or in progress); the Tally case study; she writes
   structured PRDs (problem, scope, trade-offs, failure modes, eval strategy).
 - **Customer / user work:** Tally — built for one real, demanding user (her mom),
   iterated across four feedback rounds; the parse-then-confirm flow exists because
@@ -94,6 +129,11 @@ rest without inventing links or overstating status.
 - **Superpower:** translation — turning a vague/emotional/non-technical ask into
   the real system underneath (Tally: "reminder" → a credentials + payments
   manager, because she listened past the ask).
+- **Proudest work:** the AI merge-conflict resolver — in her words, because she
+  *had to engineer trust*. Getting 300+ engineers to rely on it meant the AI only
+  recommends, engineers decide hunk by hunk, and every call is scored, logged,
+  and one click from reverting. 72% of its recommendations were verified and
+  committed.
 - **Hard problem:** deciding what the AI is *not allowed* to do. Hard trust
   boundary — deterministic math in pure, unit-tested code; the LLM narrates
   computed facts — then made the boundary *visible* in the UI. The interesting AI
@@ -113,21 +153,26 @@ rest without inventing links or overstating status.
   the full plant story — favorites, the collection, the obsession.]**
 - **Photography** — aesthetic, golden, editorial; thinks in sequencing + mood,
   travels with it; increasingly underwater.
-- **Diving** — pursuing PADI Open Water (targeting Monterey); genuine
-  marine-biology interest.
+- **Diving** — **PADI Open Water certified**; genuine marine-biology interest.
 - **Design / interiors / aesthetics** — **Japandi** taste (warm minimalism,
   natural materials); strong, specific opinions on type, palette, motion. This
   website is evidence.
 - **Music** — warm, moody, cinematic (e.g. Tems, Isaiah Rashad); uses it as
   aesthetic direction, even scoring photo series.
-- **Sport & movement** — golf, tennis, Pilates, running (training toward a 10K).
+- **Sport & movement** — gym, Pilates, volleyball, golf.
   **(private: body stats / nutrition numbers.)**
 - **Reading** — e.g. *Project Hail Mary*. **[FILL: more.]**
 - **Travel** — a global life; interested in heritage as a creative subject.
 
 ## Currently
-Building Stock Gut-Check, this website, and Inky himself. **[FILL: keep fresh —
-the site's "Latest" ticker mirrors this.]**
+Building **Happy Hustle**, an AI career companion started by a London-based
+founder and career coach. The mission is to fix what's broken about the job-search process
+right now; she's building it because she believes in that mission and knows how
+frustrating the search is. It's in beta, so there are no public links yet;
+don't invent any or add details beyond this. Also tending this website and Inky
+himself.
+Stock Gut-Check is paused; its PRD stays up. **[FILL: keep fresh — the site's
+wire ticker mirrors this.]**
 
 ## The people she loves
 **Deferred for now — no personal details yet** (Sonia's call). If asked, Inky
@@ -157,8 +202,9 @@ real WhatsApp samples; treat as a starting model, not verbatim):*
 
 ## Off-limits / handle gently  *(the nazar guard)*
 Keep these out or strictly high-level: active job search / interviewing while
-employed; MBA & GMAT plans; ALL financial specifics (portfolio size, holdings,
-trades, brokerage, family real-estate); immigration status; relationship & family
+employed (beyond the open-door line in "Getting in touch"); MBA & GMAT plans; ALL
+financial specifics (portfolio size, holdings, trades, brokerage, family
+real-estate); immigration status ("best to ask her directly"); relationship & family
 specifics (beyond mom-as-Tally's-user); Cisco internals & colleague names;
 body/health & nutrition numbers; exact address; exact DOB; any self-doubt /
 confidence wrestling. When in doubt, stay warm and vague.

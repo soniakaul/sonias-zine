@@ -1,7 +1,7 @@
 ---
 number: "01"
 title: "AI Merge {Conflict} Resolver"
-blurb: "An agentic system running in production at Cisco that has resolved 500+ Git merge conflicts end-to-end — the tedious, error-prone work engineers used to do by hand. A Python orchestrator spins up a per-file LLM agent through Codex CLI, resolves each conflict, and writes every decision to an auditable log surfaced in a Node UI, so the automation stays fast, reviewable, and trusted. What used to eat hours of an engineer's day now happens in the background."
+blurb: "An AI merge-conflict resolver I took from design to production at Cisco. 300+ engineers use it: 16,072 conflicts auto-analyzed across 43 code drops, 72% of its recommendations verified and committed, and conflict resolution cut from 3–4 days to about 19 hours. A Python orchestrator runs a per-file LLM agent through Codex CLI; the AI only recommends, and engineers decide hunk by hunk in a Node UI, with confidence scores, an audit trail, one-click revert, and override tracking. The same template now powers a second workflow: cherry-picking bug fixes across releases."
 tags:
   - Python
   - Codex CLI
@@ -36,11 +36,11 @@ codedrop trigger
                               apply_resolution.py
 ```
 
-V1 is live in production. 500+ conflicts resolved end-to-end so far, every decision auditable, every resolution reversible. The current focus is the quality of recommendations and the context engineering that surrounds them — the boring work that decides whether engineers trust the system enough to lean on it.
+It&rsquo;s live in production and used by 300+ engineers: 16,072 conflicts auto-analyzed across 43 code drops so far, and conflict resolution down from 3–4 days to about 19 hours. Every decision is auditable, every resolution reversible. The same pipeline is now a shared template that also powers a second workflow: cherry-picking bug fixes that need to be double-committed across releases. The current focus is the quality of recommendations and the context engineering that surrounds them — the boring work that decides whether engineers trust the system enough to lean on it.
 
 ## V2: confidence-calibrated recommendations
 
-V2 layers an AI recommendation alongside each engineer decision — confidence score, one-sentence explanation, citation back to the part of the file that justified it. Engineer scans, overrides the wrong ones, approves the rest. Every override becomes structured signal.
+V2 layers an AI recommendation alongside each engineer decision — confidence score, one-sentence explanation, citation back to the part of the file that justified it. Engineer scans, overrides the wrong ones, approves the rest. Every override becomes structured signal. This is how it runs in production today: engineers decide hunk by hunk, and 72% of the recommendations have been verified and committed.
 
 The open problem is confidence calibration. A model that says &ldquo;92% sure&rdquo; needs to be wrong 8% of the time, no more and no less, or the engineers stop trusting the number — and once they stop trusting the number, they start re-reading every recommendation, and the loop is broken.
 

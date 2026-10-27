@@ -1,7 +1,7 @@
 ---
 number: "01"
 title: "Stock {Gut-Check}"
-blurb: "A weekly portfolio companion that productizes a real investment ritual: CSV upload → AI-generated game plan grounded in a persistent investment thesis. Wrote the full PRD before any code — scope, success metrics, risks, agent-design principles. Building now."
+blurb: "A weekly portfolio companion that productizes a real investment ritual: CSV upload → AI-generated game plan grounded in a persistent investment thesis. Wrote the full PRD before any code — scope, success metrics, risks, agent-design principles. Build paused for now."
 tags:
   - PRD
   - Anthropic API
@@ -9,14 +9,14 @@ tags:
   - Supabase
 featured: true
 stats:
-  - label: Ship target
+  - label: Status
     value: ""
-    valueAccent: "Jun 2026"
+    valueAccent: "Paused"
 ---
 
 Stock Gut-Check came from a personal ritual: every Friday, I sit down with my portfolio and decide what the next $500 should buy. Sometimes a new name; sometimes adding to a conviction holding; sometimes nothing. The decision is grounded in a written thesis I revise quarterly, plus the week&rsquo;s news, plus a few hard rules (no single position above 10% of the account, no fractional shares, etc.).
 
-The PRD argues that this ritual is productizable — and that the product is more interesting than a portfolio tracker because the *thesis* is persistent context. An AI companion that knows what you believe about the market, applied to your current portfolio and this week&rsquo;s news, produces a *game plan*, not a snapshot. What follows is the full product requirements document, written before any code.
+The PRD argues that this ritual is productizable — and that the product is more interesting than a portfolio tracker because the *thesis* is persistent context. An AI companion that knows what you believe about the market, applied to your current portfolio and this week&rsquo;s news, produces a *game plan*, not a snapshot. What follows is the full product requirements document, written before any code. The build is paused for now; the PRD stands as written in June 2026, dates and all.
 
 ---
 
@@ -78,7 +78,7 @@ The company (the project studio) exists to support the customer in reaching her 
 
 ### Why Now
 
-Building this now is also temporally specific: LLM capability has just crossed the threshold where structured-context reasoning over financial data produces reliably useful output (it would have been impossible 18 months ago, table-stakes 18 months from now). The customer also actively deploys $500/week into a real portfolio, meaning every week of delay has a concrete capital-efficiency cost — measurable in avoidable losses like ShiftPixy. And the job search is live *now* — a shipped, demo-able artifact this summer is worth more than a polished one in the fall. The window where this product is differentiated, useful, and personally needed is open now and won&rsquo;t stay open indefinitely.
+Building this now is also temporally specific: LLM capability has just crossed the threshold where structured-context reasoning over financial data produces reliably useful output (it would have been impossible 18 months ago, table-stakes 18 months from now). The customer also actively deploys $500/week into a real portfolio, meaning every week of delay has a concrete capital-efficiency cost — measurable in avoidable losses like ShiftPixy. The window where this product is differentiated, useful, and personally needed is open now and won&rsquo;t stay open indefinitely.
 
 ### Background & Evidence
 
@@ -301,7 +301,7 @@ The following are explicitly excluded from v1, with reasoning. Each exclusion pr
 
 ### Release Plan & Milestones
 
-Stock Gut-Check v1 ships **by end of June 2026** — a ~25-day window from June 6. This is an aggressive compression from the original end-July date, made deliberately: the job search is live and a shipped, demo-able artifact now beats a polished one later. The plan is structured in five short sprints, each with a falsifiable &ldquo;done when…&rdquo; check. The ship **date is fixed**; *scope* is the release valve. If a sprint slips 3+ days, the slipping work moves to v1.5 rather than pushing the date.
+Stock Gut-Check v1 ships **by end of June 2026** — a ~25-day window from June 6. This is an aggressive compression from the original end-July date, made deliberately: a shipped, demo-able artifact now beats a polished one later. The plan is structured in five short sprints, each with a falsifiable &ldquo;done when…&rdquo; check. The ship **date is fixed**; *scope* is the release valve. If a sprint slips 3+ days, the slipping work moves to v1.5 rather than pushing the date.
 
 <Timeline>
 
